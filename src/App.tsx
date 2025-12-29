@@ -12,6 +12,9 @@ import NewRecipe from "./pages/dashboard/NewRecipe";
 import Recipes from "./pages/dashboard/Recipes";
 import ShoppingList from "./pages/dashboard/ShoppingList";
 import Clients from "./pages/dashboard/Clients";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +29,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            
+            {/* Dashboard Routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
@@ -56,6 +61,24 @@ const App = () => (
                 <Clients />
               </ProtectedRoute>
             } />
+
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/usuarios" element={
+              <ProtectedRoute>
+                <AdminUsers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/assinaturas" element={
+              <ProtectedRoute>
+                <AdminSubscriptions />
+              </ProtectedRoute>
+            } />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

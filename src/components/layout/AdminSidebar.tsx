@@ -1,33 +1,30 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
-  ChefHat, 
-  Calculator, 
-  ShoppingCart, 
-  Users, 
+  Shield, 
   LayoutDashboard,
+  Users,
+  CreditCard,
   Settings,
   LogOut,
-  CakeSlice,
-  Shield
+  BarChart3,
+  ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: Calculator, label: "Nova Receita", path: "/dashboard/receitas/nova" },
-  { icon: CakeSlice, label: "Minhas Receitas", path: "/dashboard/receitas" },
-  { icon: ShoppingCart, label: "Lista de Compras", path: "/dashboard/compras" },
-  { icon: Users, label: "Clientes", path: "/dashboard/clientes" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
+  { icon: Users, label: "Usuários", path: "/admin/usuarios" },
+  { icon: CreditCard, label: "Assinaturas", path: "/admin/assinaturas" },
+  { icon: BarChart3, label: "Métricas", path: "/admin/metricas" },
 ];
 
 const bottomMenuItems = [
-  { icon: Shield, label: "Admin Panel", path: "/admin" },
-  { icon: Settings, label: "Configurações", path: "/dashboard/configuracoes" },
+  { icon: Settings, label: "Configurações", path: "/admin/configuracoes" },
 ];
 
-export function Sidebar() {
+export function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -42,7 +39,6 @@ export function Sidebar() {
     }
   };
 
-  // Get user initials from email or metadata
   const getUserInitials = () => {
     if (user?.user_metadata?.full_name) {
       return user.user_metadata.full_name
@@ -55,25 +51,32 @@ export function Sidebar() {
     if (user?.email) {
       return user.email.slice(0, 2).toUpperCase();
     }
-    return "U";
-  };
-
-  const getUserName = () => {
-    return user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Usuário";
+    return "AD";
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-foreground text-background">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex items-center gap-3 px-6 py-6 border-b border-sidebar-border">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl gradient-primary shadow-pink">
-            <ChefHat className="h-6 w-6 text-primary-foreground" />
+        <div className="flex items-center gap-3 px-6 py-6 border-b border-background/10">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary">
+            <Shield className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-sidebar-foreground">DoceGestão</h1>
-            <p className="text-xs text-muted-foreground">Gestão para confeiteiras</p>
+            <h1 className="text-lg font-bold text-background">AdminPanel</h1>
+            <p className="text-xs text-background/60">Gestão do SaaS</p>
           </div>
+        </div>
+
+        {/* Back to App */}
+        <div className="px-4 py-4 border-b border-background/10">
+          <Link 
+            to="/dashboard"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-background/70 hover:text-background hover:bg-background/10 transition-all duration-200"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao App
+          </Link>
         </div>
 
         {/* Navigation */}
@@ -87,14 +90,11 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-background/70 hover:text-background hover:bg-background/10"
                 )}
               >
-                <item.icon className={cn(
-                  "h-5 w-5 transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )} />
+                <item.icon className="h-5 w-5" />
                 {item.label}
               </Link>
             );
@@ -102,7 +102,7 @@ export function Sidebar() {
         </nav>
 
         {/* Bottom Menu */}
-        <div className="px-4 py-4 border-t border-sidebar-border space-y-1.5">
+        <div className="px-4 py-4 border-t border-background/10 space-y-1.5">
           {bottomMenuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -112,18 +112,18 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    ? "bg-background/20 text-background"
+                    : "text-background/70 hover:text-background hover:bg-background/10"
                 )}
               >
-                <item.icon className="h-5 w-5 text-muted-foreground" />
+                <item.icon className="h-5 w-5" />
                 {item.label}
               </Link>
             );
           })}
           <button 
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive-soft transition-all duration-200"
+            className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/20 transition-all duration-200"
           >
             <LogOut className="h-5 w-5" />
             Sair
@@ -131,14 +131,14 @@ export function Sidebar() {
         </div>
 
         {/* User Info */}
-        <div className="px-4 py-4 border-t border-sidebar-border">
+        <div className="px-4 py-4 border-t border-background/10">
           <div className="flex items-center gap-3 px-2">
-            <div className="h-10 w-10 rounded-full bg-primary-soft flex items-center justify-center">
-              <span className="text-sm font-bold text-primary">{getUserInitials()}</span>
+            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-sm font-bold text-primary-foreground">{getUserInitials()}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-sidebar-foreground truncate">{getUserName()}</p>
-              <p className="text-xs text-muted-foreground truncate">Plano Pro</p>
+              <p className="text-sm font-semibold text-background truncate">Administrador</p>
+              <p className="text-xs text-background/60 truncate">{user?.email}</p>
             </div>
           </div>
         </div>
