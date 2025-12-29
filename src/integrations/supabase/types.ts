@@ -14,16 +14,322 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          last_order_at: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["client_status"]
+          total_orders: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_order_at?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["client_status"]
+          total_orders?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_order_at?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["client_status"]
+          total_orders?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ingredients: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          name: string
+          package_price: number
+          package_size: number
+          package_unit: string
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          package_price?: number
+          package_size?: number
+          package_unit?: string
+          unit?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          package_price?: number
+          package_size?: number
+          package_unit?: string
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          business_name: string | null
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          business_name?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          business_name?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recipe_items: {
+        Row: {
+          calculated_cost: number
+          created_at: string
+          id: string
+          ingredient_id: string | null
+          ingredient_name: string
+          package_price: number
+          package_size: number
+          package_unit: string
+          quantity: number
+          recipe_id: string
+          unit: string
+        }
+        Insert: {
+          calculated_cost?: number
+          created_at?: string
+          id?: string
+          ingredient_id?: string | null
+          ingredient_name: string
+          package_price?: number
+          package_size?: number
+          package_unit?: string
+          quantity?: number
+          recipe_id: string
+          unit?: string
+        }
+        Update: {
+          calculated_cost?: number
+          created_at?: string
+          id?: string
+          ingredient_id?: string | null
+          ingredient_name?: string
+          package_price?: number
+          package_size?: number
+          package_unit?: string
+          quantity?: number
+          recipe_id?: string
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_items_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_items_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          energy_cost: number | null
+          id: string
+          image_url: string | null
+          ingredients_cost: number | null
+          is_active: boolean
+          labor_cost: number | null
+          name: string
+          packaging_cost: number | null
+          production_cost: number | null
+          profit_margin: number
+          suggested_price: number | null
+          transport_cost: number | null
+          updated_at: string
+          user_id: string
+          yield_amount: number
+          yield_unit: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          energy_cost?: number | null
+          id?: string
+          image_url?: string | null
+          ingredients_cost?: number | null
+          is_active?: boolean
+          labor_cost?: number | null
+          name: string
+          packaging_cost?: number | null
+          production_cost?: number | null
+          profit_margin?: number
+          suggested_price?: number | null
+          transport_cost?: number | null
+          updated_at?: string
+          user_id: string
+          yield_amount?: number
+          yield_unit?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          energy_cost?: number | null
+          id?: string
+          image_url?: string | null
+          ingredients_cost?: number | null
+          is_active?: boolean
+          labor_cost?: number | null
+          name?: string
+          packaging_cost?: number | null
+          production_cost?: number | null
+          profit_margin?: number
+          suggested_price?: number | null
+          transport_cost?: number | null
+          updated_at?: string
+          user_id?: string
+          yield_amount?: number
+          yield_unit?: string
+        }
+        Relationships: []
+      }
+      shopping_list: {
+        Row: {
+          category: string
+          created_at: string
+          estimated_price: number | null
+          id: string
+          is_checked: boolean
+          name: string
+          quantity: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          estimated_price?: number | null
+          id?: string
+          is_checked?: boolean
+          name: string
+          quantity?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          estimated_price?: number | null
+          id?: string
+          is_checked?: boolean
+          name?: string
+          quantity?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "confectioner"
+      client_status: "active" | "pending" | "inactive"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +456,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "confectioner"],
+      client_status: ["active", "pending", "inactive"],
+    },
   },
 } as const
