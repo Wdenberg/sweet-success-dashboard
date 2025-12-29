@@ -33,10 +33,12 @@ export default function Index() {
             <span className="text-xl font-bold text-foreground">DoceGestão</span>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost">Entrar</Button>
-            <Link to="/dashboard">
+            <Link to="/auth">
+              <Button variant="ghost">Entrar</Button>
+            </Link>
+            <Link to="/auth">
               <Button className="gap-2">
-                Acessar Dashboard
+                Começar Grátis
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
