@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   ChefHat, 
   Calculator, 
@@ -10,6 +10,8 @@ import {
   CakeSlice
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -25,6 +27,38 @@ const bottomMenuItems = [
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success("Logout realizado com sucesso!");
+      navigate("/auth");
+    } catch (error) {
+      toast.error("Erro ao sair. Tente novamente.");
+    }
+  };
+
+  // Get user initials from email or metadata
+  const getUserInitials = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+        .split(' ')
+        .map((n: string) => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return "U";
+  };
+
+  const getUserName = () => {
+    return user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Usuário";
+  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
@@ -85,7 +119,10 @@ export function Sidebar() {
               </Link>
             );
           })}
-          <button className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive-soft transition-all duration-200">
+          <button 
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive-soft transition-all duration-200"
+          >
             <LogOut className="h-5 w-5" />
             Sair
           </button>
@@ -95,10 +132,10 @@ export function Sidebar() {
         <div className="px-4 py-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3 px-2">
             <div className="h-10 w-10 rounded-full bg-primary-soft flex items-center justify-center">
-              <span className="text-sm font-bold text-primary">MC</span>
+              <span className="text-sm font-bold text-primary">{getUserInitials()}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-sidebar-foreground truncate">Maria Clara</p>
+              <p className="text-sm font-semibold text-sidebar-foreground truncate">{getUserName()}</p>
               <p className="text-xs text-muted-foreground truncate">Plano Pro</p>
             </div>
           </div>

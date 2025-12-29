@@ -3,7 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import Dashboard from "./pages/dashboard/Dashboard";
 import NewRecipe from "./pages/dashboard/NewRecipe";
 import Recipes from "./pages/dashboard/Recipes";
@@ -15,22 +18,45 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/receitas" element={<Recipes />} />
-          <Route path="/dashboard/receitas/nova" element={<NewRecipe />} />
-          <Route path="/dashboard/compras" element={<ShoppingList />} />
-          <Route path="/dashboard/clientes" element={<Clients />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/receitas" element={
+              <ProtectedRoute>
+                <Recipes />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/receitas/nova" element={
+              <ProtectedRoute>
+                <NewRecipe />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/compras" element={
+              <ProtectedRoute>
+                <ShoppingList />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/clientes" element={
+              <ProtectedRoute>
+                <Clients />
+              </ProtectedRoute>
+            } />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
