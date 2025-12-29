@@ -41,6 +41,11 @@ const App = () => (
                 <NewRecipe />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/receitas/:id/editar" element={
+              <ProtectedRoute>
+                <NewRecipe />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard/compras" element={
               <ProtectedRoute>
                 <ShoppingList />

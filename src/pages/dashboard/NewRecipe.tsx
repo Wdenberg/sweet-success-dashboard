@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
-import { Plus, Save, ArrowLeft, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { Plus, Save, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { IngredientRow } from "@/components/recipes/IngredientRow";
 import { IndirectCostItem } from "@/components/recipes/IndirectCostItem";
 import { PriceSummary } from "@/components/recipes/PriceSummary";
 import { Ingredient, IndirectCost, RecipeCalculation } from "@/types/recipe";
-import { toast } from "sonner";
+import { useRecipes, CreateRecipeData } from "@/hooks/useRecipes";
 
 const defaultIndirectCosts: IndirectCost[] = [
   { id: "labor", name: "Mão de Obra", enabled: true, value: 25 },
@@ -32,6 +32,13 @@ const createEmptyIngredient = (): Ingredient => ({
 });
 
 export default function NewRecipe() {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditing = !!id;
+
+  const { createRecipe, updateRecipe, useRecipeById } = useRecipes();
+  const { data: existingRecipe, isLoading: isLoadingRecipe } = useRecipeById(id);
+
   // Form State
   const [name, setName] = useState("");
   const [yieldAmount, setYieldAmount] = useState(1);
@@ -39,6 +46,7 @@ export default function NewRecipe() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [profitMargin, setProfitMargin] = useState(45);
+  const [category, setCategory] = useState("");
   
   const [ingredients, setIngredients] = useState<Ingredient[]>([
     createEmptyIngredient(),
@@ -47,6 +55,39 @@ export default function NewRecipe() {
   ]);
   
   const [indirectCosts, setIndirectCosts] = useState<IndirectCost[]>(defaultIndirectCosts);
+
+  // Load existing recipe data when editing
+  useEffect(() => {
+    if (existingRecipe) {
+      setName(existingRecipe.name);
+      setYieldAmount(existingRecipe.yield_amount);
+      setYieldUnit(existingRecipe.yield_unit);
+      setProfitMargin(existingRecipe.profit_margin);
+      setCategory(existingRecipe.category || "");
+      setImagePreview(existingRecipe.image_url);
+
+      // Load indirect costs
+      setIndirectCosts([
+        { id: "labor", name: "Mão de Obra", enabled: (existingRecipe.labor_cost || 0) > 0, value: existingRecipe.labor_cost || 0 },
+        { id: "energy", name: "Gás / Energia", enabled: (existingRecipe.energy_cost || 0) > 0, value: existingRecipe.energy_cost || 0 },
+        { id: "packaging", name: "Embalagem", enabled: (existingRecipe.packaging_cost || 0) > 0, value: existingRecipe.packaging_cost || 0 },
+        { id: "transport", name: "Transporte", enabled: (existingRecipe.transport_cost || 0) > 0, value: existingRecipe.transport_cost || 0 },
+      ]);
+
+      // Load ingredients
+      if (existingRecipe.recipe_items && existingRecipe.recipe_items.length > 0) {
+        setIngredients(existingRecipe.recipe_items.map(item => ({
+          id: item.id,
+          name: item.ingredient_name,
+          quantity: item.quantity,
+          unit: item.unit,
+          packagePrice: item.package_price,
+          packageSize: item.package_size,
+          packageUnit: item.package_unit,
+        })));
+      }
+    }
+  }, [existingRecipe]);
 
   // Handlers
   const handleImageChange = useCallback((file: File | null, preview: string | null) => {
@@ -112,23 +153,61 @@ export default function NewRecipe() {
     };
   }, [ingredients, indirectCosts, profitMargin, yieldAmount, calculateIngredientCost]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
-      toast.error("Digite o nome da receita");
       return;
     }
     
     const validIngredients = ingredients.filter(i => i.name.trim());
-    if (validIngredients.length === 0) {
-      toast.error("Adicione pelo menos um ingrediente");
-      return;
-    }
 
-    // Here you would save to database
-    toast.success("Receita salva com sucesso!", {
-      description: `Preço sugerido: R$ ${calculation.suggestedPrice.toFixed(2)}`,
-    });
+    const recipeData: CreateRecipeData = {
+      name,
+      yield_amount: yieldAmount,
+      yield_unit: yieldUnit,
+      profit_margin: profitMargin,
+      labor_cost: indirectCosts.find(c => c.id === "labor")?.enabled ? indirectCosts.find(c => c.id === "labor")?.value || 0 : 0,
+      energy_cost: indirectCosts.find(c => c.id === "energy")?.enabled ? indirectCosts.find(c => c.id === "energy")?.value || 0 : 0,
+      packaging_cost: indirectCosts.find(c => c.id === "packaging")?.enabled ? indirectCosts.find(c => c.id === "packaging")?.value || 0 : 0,
+      transport_cost: indirectCosts.find(c => c.id === "transport")?.enabled ? indirectCosts.find(c => c.id === "transport")?.value || 0 : 0,
+      ingredients_cost: calculation.ingredientsCost,
+      production_cost: calculation.productionCost,
+      suggested_price: calculation.suggestedPrice,
+      category: category || undefined,
+      image_url: imagePreview || undefined,
+      items: validIngredients.map(ing => ({
+        ingredient_name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit,
+        package_price: ing.packagePrice,
+        package_size: ing.packageSize,
+        package_unit: ing.packageUnit,
+        calculated_cost: calculateIngredientCost(ing),
+      })),
+    };
+
+    if (isEditing && id) {
+      await updateRecipe.mutateAsync({ id, data: recipeData });
+    } else {
+      await createRecipe.mutateAsync(recipeData);
+    }
+    
+    navigate("/dashboard/receitas");
   };
+
+  const isSaving = createRecipe.isPending || updateRecipe.isPending;
+
+  if (isEditing && isLoadingRecipe) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Carregando receita...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -142,13 +221,21 @@ export default function NewRecipe() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Nova Ficha Técnica</h1>
-              <p className="text-muted-foreground">Calcule o preço ideal para sua receita</p>
+              <h1 className="text-2xl font-bold text-foreground">
+                {isEditing ? "Editar Receita" : "Nova Ficha Técnica"}
+              </h1>
+              <p className="text-muted-foreground">
+                {isEditing ? "Atualize os dados da sua receita" : "Calcule o preço ideal para sua receita"}
+              </p>
             </div>
           </div>
-          <Button onClick={handleSave} className="gap-2">
-            <Save className="h-4 w-4" />
-            Salvar Receita
+          <Button onClick={handleSave} disabled={isSaving || !name.trim()} className="gap-2">
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {isSaving ? "Salvando..." : "Salvar Receita"}
           </Button>
         </div>
 
@@ -178,6 +265,15 @@ export default function NewRecipe() {
                     placeholder="Ex: Bolo de Chocolate"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Categoria</Label>
+                  <Input
+                    id="category"
+                    placeholder="Ex: Bolos, Tortas, Doces"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
