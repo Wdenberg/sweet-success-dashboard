@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { 
   ChefHat, 
   Calculator, 
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const menuItems = [
@@ -22,15 +24,26 @@ const menuItems = [
   { icon: Users, label: "Clientes", path: "/dashboard/clientes" },
 ];
 
-const bottomMenuItems = [
-  { icon: Shield, label: "Admin Panel", path: "/admin" },
-  { icon: Settings, label: "Configurações", path: "/dashboard/configuracoes" },
-];
-
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    async function checkAdminRole() {
+      if (!user) return;
+      
+      const { data } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin'
+      });
+      
+      setIsAdmin(!!data);
+    }
+    
+    checkAdminRole();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -103,24 +116,32 @@ export function Sidebar() {
 
         {/* Bottom Menu */}
         <div className="px-4 py-4 border-t border-sidebar-border space-y-1.5">
-          {bottomMenuItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-                )}
-              >
-                <item.icon className="h-5 w-5 text-muted-foreground" />
-                {item.label}
-              </Link>
-            );
-          })}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                location.pathname.startsWith("/admin")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+              )}
+            >
+              <Shield className="h-5 w-5 text-muted-foreground" />
+              Admin Panel
+            </Link>
+          )}
+          <Link
+            to="/dashboard/configuracoes"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+              location.pathname === "/dashboard/configuracoes"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+            )}
+          >
+            <Settings className="h-5 w-5 text-muted-foreground" />
+            Configurações
+          </Link>
           <button 
             onClick={handleLogout}
             className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive-soft transition-all duration-200"
