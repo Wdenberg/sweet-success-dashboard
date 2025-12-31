@@ -37,7 +37,7 @@ export function TrialBanner({ compact = false }: TrialBannerProps) {
     const message = encodeURIComponent(
       "Olá! Gostaria de saber mais sobre os planos de assinatura do app."
     );
-    window.open(`https://wa.me/5500000000000?text=${message}`, "_blank");
+    window.open(`https://wa.me/5581999657171?text=${message}`, "_blank");
   };
 
   if (compact) {
