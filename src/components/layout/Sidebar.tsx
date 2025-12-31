@@ -13,8 +13,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { TrialBanner } from "@/components/trial/TrialBanner";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -23,6 +25,24 @@ const menuItems = [
   { icon: ShoppingCart, label: "Lista de Compras", path: "/dashboard/compras" },
   { icon: Users, label: "Clientes", path: "/dashboard/clientes" },
 ];
+
+function SubscriptionBadge() {
+  const { subscription, isLoading } = useSubscription();
+  
+  if (isLoading || !subscription) {
+    return <p className="text-xs text-muted-foreground truncate">Carregando...</p>;
+  }
+  
+  if (subscription.isActive) {
+    return <p className="text-xs text-emerald-600 truncate">Plano Ativo</p>;
+  }
+  
+  if (subscription.isTrialActive) {
+    return <p className="text-xs text-amber-600 truncate">Trial - {subscription.daysRemaining} dias</p>;
+  }
+  
+  return <p className="text-xs text-destructive truncate">Trial Expirado</p>;
+}
 
 export function Sidebar() {
   const location = useLocation();
@@ -151,6 +171,11 @@ export function Sidebar() {
           </button>
         </div>
 
+        {/* Trial Banner */}
+        <div className="px-4 py-2">
+          <TrialBanner compact />
+        </div>
+
         {/* User Info */}
         <div className="px-4 py-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3 px-2">
@@ -159,7 +184,7 @@ export function Sidebar() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-sidebar-foreground truncate">{getUserName()}</p>
-              <p className="text-xs text-muted-foreground truncate">Plano Pro</p>
+              <SubscriptionBadge />
             </div>
           </div>
         </div>

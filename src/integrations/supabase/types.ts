@@ -109,6 +109,10 @@ export type Database = {
           full_name: string
           id: string
           phone: string | null
+          subscription_status:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          trial_ends_at: string | null
           updated_at: string
           user_id: string
         }
@@ -119,6 +123,10 @@ export type Database = {
           full_name: string
           id?: string
           phone?: string | null
+          subscription_status?:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -129,6 +137,10 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string | null
+          subscription_status?:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -330,6 +342,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "confectioner"
       client_status: "active" | "pending" | "inactive"
+      subscription_status: "trial" | "active" | "expired" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -459,6 +472,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "confectioner"],
       client_status: ["active", "pending", "inactive"],
+      subscription_status: ["trial", "active", "expired", "cancelled"],
     },
   },
 } as const
