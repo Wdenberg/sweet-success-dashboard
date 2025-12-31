@@ -16,6 +16,7 @@ import Clients from "./pages/dashboard/Clients";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
+import TrialExpired from "./pages/dashboard/TrialExpired";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,11 @@ const App = () => (
             <Route path="/dashboard/clientes" element={
               <ProtectedRoute>
                 <Clients />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/trial-expirado" element={
+              <ProtectedRoute requireActiveSubscription={false}>
+                <TrialExpired />
               </ProtectedRoute>
             } />
 
