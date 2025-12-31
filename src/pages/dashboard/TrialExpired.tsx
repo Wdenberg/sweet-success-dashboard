@@ -14,7 +14,7 @@ export default function TrialExpired() {
     const message = encodeURIComponent(
       `Olá! Sou ${user?.email} e gostaria de ativar minha assinatura do app.`
     );
-    window.open(`https://wa.me/5500000000000?text=${message}`, "_blank");
+    window.open(`https://wa.me/5581999657171?text=${message}`, "_blank");
   };
 
   const handleLogout = async () => {
