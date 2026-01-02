@@ -1,37 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import type { Database } from "@/integrations/supabase/types";
+
+type SubscriptionStatus = Database["public"]["Enums"]["subscription_status"];
 
 export interface AdminUser {
   id: string;
+  user_id: string;
   email: string;
   full_name: string;
   created_at: string;
-  last_sign_in_at: string | null;
-  role: "admin" | "confectioner";
-  status: "active" | "blocked";
-  plan: "free" | "pro" | "business";
-  total_recipes: number;
-  total_revenue: number;
+  updated_at: string;
+  subscription_status: SubscriptionStatus | null;
+  trial_ends_at: string | null;
+  days_remaining: number | null;
+  is_trial_active: boolean;
 }
 
 export interface AdminStats {
   totalUsers: number;
   activeUsers: number;
-  proUsers: number;
-  freeUsers: number;
-  mrr: number;
-  churnRate: number;
+  trialUsers: number;
+  expiredUsers: number;
+  cancelledUsers: number;
   newUsersThisMonth: number;
   totalRecipes: number;
 }
-
-// Simulated pricing
-const PLAN_PRICES = {
-  free: 0,
-  pro: 49.90,
-  business: 149.90,
-};
 
 export function useAdminStats() {
   const { user } = useAuth();
@@ -65,17 +60,15 @@ export function useAdminStats() {
     enabled: !!user?.id,
   });
 
-  // Calculate admin stats
+  // Calculate admin stats from real data
   const calculateStats = (): AdminStats => {
     const profiles = profilesQuery.data || [];
     const totalUsers = profiles.length;
     
-    // Simulated data for demo - in production, this would come from a subscriptions table
-    const proUsersCount = Math.floor(totalUsers * 0.3);
-    const businessUsersCount = Math.floor(totalUsers * 0.1);
-    const freeUsersCount = totalUsers - proUsersCount - businessUsersCount;
-    
-    const mrr = (proUsersCount * PLAN_PRICES.pro) + (businessUsersCount * PLAN_PRICES.business);
+    const trialUsers = profiles.filter(p => p.subscription_status === "trial").length;
+    const activeUsers = profiles.filter(p => p.subscription_status === "active").length;
+    const expiredUsers = profiles.filter(p => p.subscription_status === "expired").length;
+    const cancelledUsers = profiles.filter(p => p.subscription_status === "cancelled").length;
     
     const thisMonth = new Date();
     thisMonth.setDate(1);
@@ -85,32 +78,42 @@ export function useAdminStats() {
 
     return {
       totalUsers,
-      activeUsers: Math.floor(totalUsers * 0.85),
-      proUsers: proUsersCount,
-      freeUsers: freeUsersCount,
-      mrr,
-      churnRate: 2.3,
+      activeUsers,
+      trialUsers,
+      expiredUsers,
+      cancelledUsers,
       newUsersThisMonth,
       totalRecipes: recipesQuery.data || 0,
     };
   };
 
-  // Transform profiles to admin users
+  // Transform profiles to admin users with real data
   const getUsers = (): AdminUser[] => {
     const profiles = profilesQuery.data || [];
+    const now = new Date();
     
-    return profiles.map((profile, index) => ({
-      id: profile.user_id,
-      email: `user${index + 1}@email.com`, // Simulated since we can't access auth.users
-      full_name: profile.full_name,
-      created_at: profile.created_at,
-      last_sign_in_at: profile.updated_at,
-      role: index === 0 ? "admin" as const : "confectioner" as const,
-      status: Math.random() > 0.1 ? "active" as const : "blocked" as const,
-      plan: index % 3 === 0 ? "pro" as const : index % 5 === 0 ? "business" as const : "free" as const,
-      total_recipes: Math.floor(Math.random() * 20),
-      total_revenue: Math.floor(Math.random() * 5000),
-    }));
+    return profiles.map((profile, index) => {
+      const trialEndsAt = profile.trial_ends_at ? new Date(profile.trial_ends_at) : null;
+      const daysRemaining = trialEndsAt 
+        ? Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        : null;
+      const isTrialActive = profile.subscription_status === "trial" && 
+        trialEndsAt !== null && 
+        trialEndsAt > now;
+
+      return {
+        id: profile.id,
+        user_id: profile.user_id,
+        email: `user${index + 1}@email.com`, // Placeholder since we can't access auth.users
+        full_name: profile.full_name,
+        created_at: profile.created_at,
+        updated_at: profile.updated_at,
+        subscription_status: profile.subscription_status,
+        trial_ends_at: profile.trial_ends_at,
+        days_remaining: daysRemaining,
+        is_trial_active: isTrialActive,
+      };
+    });
   };
 
   return {
@@ -118,5 +121,9 @@ export function useAdminStats() {
     users: getUsers(),
     isLoading: profilesQuery.isLoading || recipesQuery.isLoading,
     error: profilesQuery.error || recipesQuery.error,
+    refetch: () => {
+      profilesQuery.refetch();
+      recipesQuery.refetch();
+    },
   };
 }

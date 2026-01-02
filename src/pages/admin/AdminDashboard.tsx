@@ -1,7 +1,5 @@
 import { 
-  DollarSign, 
   Users, 
-  TrendingUp, 
   TrendingDown,
   CakeSlice,
   UserPlus,
@@ -9,7 +7,10 @@ import {
   AlertTriangle,
   ArrowUpRight,
   ArrowDownRight,
-  Loader2
+  Loader2,
+  Timer,
+  CheckCircle,
+  Clock
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,30 +21,30 @@ export default function AdminDashboard() {
 
   const kpis = [
     {
-      title: "MRR",
-      value: `R$ ${stats.mrr.toFixed(2)}`,
-      change: "+12.5%",
-      trend: "up",
-      icon: DollarSign,
-      description: "Receita Recorrente Mensal",
-      color: "success",
-    },
-    {
       title: "Usuários Ativos",
       value: stats.activeUsers.toString(),
       change: `+${stats.newUsersThisMonth} este mês`,
       trend: "up",
-      icon: Users,
-      description: "Total de assinantes ativos",
+      icon: CheckCircle,
+      description: "Assinaturas ativas",
+      color: "success",
+    },
+    {
+      title: "Em Trial",
+      value: stats.trialUsers.toString(),
+      change: `${stats.totalUsers} total`,
+      trend: "up",
+      icon: Timer,
+      description: "Usuários em período de teste",
       color: "primary",
     },
     {
-      title: "Taxa de Churn",
-      value: `${stats.churnRate}%`,
-      change: "-0.5% vs mês anterior",
+      title: "Expirados",
+      value: stats.expiredUsers.toString(),
+      change: `${stats.cancelledUsers} cancelados`,
       trend: "down",
-      icon: TrendingDown,
-      description: "Cancelamentos mensais",
+      icon: Clock,
+      description: "Assinaturas expiradas",
       color: "warning",
     },
     {
@@ -57,10 +58,11 @@ export default function AdminDashboard() {
     },
   ];
 
-  const revenueBreakdown = [
-    { plan: "Pro", users: stats.proUsers, price: 49.90, total: stats.proUsers * 49.90 },
-    { plan: "Business", users: Math.floor(stats.totalUsers * 0.1), price: 149.90, total: Math.floor(stats.totalUsers * 0.1) * 149.90 },
-    { plan: "Free", users: stats.freeUsers, price: 0, total: 0 },
+  const statusBreakdown = [
+    { status: "Ativos", users: stats.activeUsers, color: "success" },
+    { status: "Em Trial", users: stats.trialUsers, color: "primary" },
+    { status: "Expirados", users: stats.expiredUsers, color: "warning" },
+    { status: "Cancelados", users: stats.cancelledUsers, color: "destructive" },
   ];
 
   const recentUsers = users.slice(0, 5);
@@ -82,8 +84,8 @@ export default function AdminDashboard() {
     <AdminLayout>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Dashboard Financeiro</h1>
-        <p className="text-muted-foreground">Visão geral do DoceGestão SaaS</p>
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground">Visão geral do DoceGestão</p>
       </div>
 
       {/* KPIs Grid */}
@@ -132,47 +134,46 @@ export default function AdminDashboard() {
 
       {/* Content Grid */}
       <div className="grid grid-cols-3 gap-6">
-        {/* Revenue Breakdown */}
+        {/* Status Breakdown */}
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-primary" />
-              Composição da Receita
+              Status das Assinaturas
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {revenueBreakdown.map((item, index) => (
+              {statusBreakdown.map((item, index) => (
                 <div 
-                  key={item.plan}
+                  key={item.status}
                   className="flex items-center justify-between p-4 rounded-xl bg-muted/50 animate-fade-in"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                      item.plan === "Pro" ? "bg-primary-soft" :
-                      item.plan === "Business" ? "bg-success-soft" :
-                      "bg-muted"
+                      item.color === "success" ? "bg-success-soft" :
+                      item.color === "primary" ? "bg-primary-soft" :
+                      item.color === "warning" ? "bg-warning-soft" :
+                      "bg-destructive-soft"
                     }`}>
-                      <CreditCard className={`h-5 w-5 ${
-                        item.plan === "Pro" ? "text-primary" :
-                        item.plan === "Business" ? "text-success" :
-                        "text-muted-foreground"
+                      <Users className={`h-5 w-5 ${
+                        item.color === "success" ? "text-success" :
+                        item.color === "primary" ? "text-primary" :
+                        item.color === "warning" ? "text-warning" :
+                        "text-destructive"
                       }`} />
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground">Plano {item.plan}</p>
+                      <p className="font-semibold text-foreground">{item.status}</p>
                       <p className="text-sm text-muted-foreground">
-                        {item.users} usuários × R$ {item.price.toFixed(2)}
+                        {stats.totalUsers > 0 ? ((item.users / stats.totalUsers) * 100).toFixed(0) : 0}% do total
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-foreground">
-                      R$ {item.total.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {stats.mrr > 0 ? ((item.total / stats.mrr) * 100).toFixed(0) : 0}% do MRR
+                      {item.users} usuários
                     </p>
                   </div>
                 </div>
@@ -181,8 +182,8 @@ export default function AdminDashboard() {
 
             {/* Total */}
             <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
-              <span className="text-lg font-semibold text-foreground">Total MRR</span>
-              <span className="text-2xl font-bold text-success">R$ {stats.mrr.toFixed(2)}</span>
+              <span className="text-lg font-semibold text-foreground">Total de Usuários</span>
+              <span className="text-2xl font-bold text-primary">{stats.totalUsers}</span>
             </div>
           </CardContent>
         </Card>
@@ -221,11 +222,14 @@ export default function AdminDashboard() {
                       </p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      user.plan === "pro" ? "bg-primary-soft text-primary" :
-                      user.plan === "business" ? "bg-success-soft text-success" :
-                      "bg-muted text-muted-foreground"
+                      user.subscription_status === "active" ? "bg-success-soft text-success" :
+                      user.subscription_status === "trial" ? "bg-primary-soft text-primary" :
+                      user.subscription_status === "expired" ? "bg-warning-soft text-warning" :
+                      "bg-destructive-soft text-destructive"
                     }`}>
-                      {user.plan}
+                      {user.subscription_status === "active" ? "Ativo" :
+                       user.subscription_status === "trial" ? "Trial" :
+                       user.subscription_status === "expired" ? "Expirado" : "Cancelado"}
                     </span>
                   </div>
                 ))}
@@ -236,7 +240,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Alerts */}
-      {stats.churnRate > 3 && (
+      {stats.expiredUsers > stats.activeUsers && (
         <Card className="mt-6 border-warning/50 bg-warning-soft/30">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
@@ -244,9 +248,9 @@ export default function AdminDashboard() {
                 <AlertTriangle className="h-5 w-5 text-warning" />
               </div>
               <div>
-                <p className="font-semibold text-foreground">Atenção: Taxa de Churn Elevada</p>
+                <p className="font-semibold text-foreground">Atenção: Muitas Assinaturas Expiradas</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  A taxa de churn está acima de 3%. Considere analisar os motivos de cancelamento e implementar estratégias de retenção.
+                  Você tem mais usuários expirados do que ativos. Considere entrar em contato para reativação.
                 </p>
               </div>
             </div>

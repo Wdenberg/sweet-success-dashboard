@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { 
-  CreditCard, 
   Search, 
   Download,
   CheckCircle,
   XCircle,
   Clock,
   Loader2,
-  DollarSign,
-  TrendingUp,
-  Calendar
+  Users,
+  MoreHorizontal,
+  Play,
+  Pause,
+  RefreshCw,
+  Calendar,
+  Timer
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,71 +26,105 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAdminStats } from "@/hooks/useAdminStats";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAdminStats, type AdminUser } from "@/hooks/useAdminStats";
+import { useManageSubscription } from "@/hooks/useManageSubscription";
+import { SubscriptionActionDialog } from "@/components/admin/SubscriptionActionDialog";
 
-// Simulated subscription/payment data
-const subscriptions = [
-  { id: "1", user: "Maria Clara", email: "maria@email.com", plan: "pro", amount: 49.90, status: "paid", date: "2024-01-15", method: "Cartão" },
-  { id: "2", user: "Ana Paula", email: "ana@email.com", plan: "business", amount: 149.90, status: "paid", date: "2024-01-14", method: "PIX" },
-  { id: "3", user: "Carlos Eduardo", email: "carlos@email.com", plan: "pro", amount: 49.90, status: "pending", date: "2024-01-13", method: "Boleto" },
-  { id: "4", user: "Juliana Costa", email: "juliana@email.com", plan: "pro", amount: 49.90, status: "failed", date: "2024-01-12", method: "Cartão" },
-  { id: "5", user: "Pedro Santos", email: "pedro@email.com", plan: "business", amount: 149.90, status: "paid", date: "2024-01-11", method: "Cartão" },
-  { id: "6", user: "Fernanda Lima", email: "fernanda@email.com", plan: "pro", amount: 49.90, status: "paid", date: "2024-01-10", method: "PIX" },
-  { id: "7", user: "Ricardo Alves", email: "ricardo@email.com", plan: "pro", amount: 49.90, status: "paid", date: "2024-01-09", method: "Cartão" },
-  { id: "8", user: "Camila Ferreira", email: "camila@email.com", plan: "business", amount: 149.90, status: "pending", date: "2024-01-08", method: "Boleto" },
-];
+type ActionType = "activate" | "expire" | "cancel" | "renew" | "extend";
 
 export default function AdminSubscriptions() {
-  const { stats, isLoading } = useAdminStats();
+  const { stats, users, isLoading } = useAdminStats();
+  const { 
+    activateSubscription, 
+    expireSubscription, 
+    cancelSubscription, 
+    renewTrial, 
+    extendSubscription,
+    isLoading: isActionLoading 
+  } = useManageSubscription();
+  
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [planFilter, setPlanFilter] = useState<string>("all");
+  
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<ActionType>("activate");
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
-  const filteredSubscriptions = subscriptions.filter(sub => {
-    const matchesSearch = sub.user.toLowerCase().includes(search.toLowerCase()) ||
-                         sub.email.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "all" || sub.status === statusFilter;
-    const matchesPlan = planFilter === "all" || sub.plan === planFilter;
-    return matchesSearch && matchesStatus && matchesPlan;
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.full_name.toLowerCase().includes(search.toLowerCase()) ||
+                         user.email.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === "all" || user.subscription_status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
-  const totalPaid = subscriptions.filter(s => s.status === "paid").reduce((sum, s) => sum + s.amount, 0);
-  const totalPending = subscriptions.filter(s => s.status === "pending").reduce((sum, s) => sum + s.amount, 0);
-  const totalFailed = subscriptions.filter(s => s.status === "failed").reduce((sum, s) => sum + s.amount, 0);
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return (
-          <Badge className="bg-success-soft text-success border-0 gap-1">
-            <CheckCircle className="h-3 w-3" /> Pago
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge className="bg-warning-soft text-warning border-0 gap-1">
-            <Clock className="h-3 w-3" /> Pendente
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge className="bg-destructive-soft text-destructive border-0 gap-1">
-            <XCircle className="h-3 w-3" /> Falhou
-          </Badge>
-        );
-      default:
-        return null;
-    }
+  const handleAction = (action: ActionType, user: AdminUser) => {
+    setSelectedAction(action);
+    setSelectedUser(user);
+    setDialogOpen(true);
   };
 
-  const getPlanBadge = (plan: string) => {
-    switch (plan) {
-      case "pro":
-        return <Badge className="bg-primary-soft text-primary border-0">Pro</Badge>;
-      case "business":
-        return <Badge className="bg-success-soft text-success border-0">Business</Badge>;
+  const handleConfirmAction = async (days?: number) => {
+    if (!selectedUser) return;
+
+    switch (selectedAction) {
+      case "activate":
+        await activateSubscription(selectedUser.user_id);
+        break;
+      case "expire":
+        await expireSubscription(selectedUser.user_id);
+        break;
+      case "cancel":
+        await cancelSubscription(selectedUser.user_id);
+        break;
+      case "renew":
+        await renewTrial(selectedUser.user_id, days || 15);
+        break;
+      case "extend":
+        await extendSubscription(selectedUser.user_id, days || 30);
+        break;
+    }
+
+    setDialogOpen(false);
+    setSelectedUser(null);
+  };
+
+  const getStatusBadge = (status: string | null) => {
+    switch (status) {
+      case "active":
+        return (
+          <Badge className="bg-success-soft text-success border-0 gap-1">
+            <CheckCircle className="h-3 w-3" /> Ativo
+          </Badge>
+        );
+      case "trial":
+        return (
+          <Badge className="bg-primary-soft text-primary border-0 gap-1">
+            <Timer className="h-3 w-3" /> Trial
+          </Badge>
+        );
+      case "expired":
+        return (
+          <Badge className="bg-warning-soft text-warning border-0 gap-1">
+            <Clock className="h-3 w-3" /> Expirado
+          </Badge>
+        );
+      case "cancelled":
+        return (
+          <Badge className="bg-destructive-soft text-destructive border-0 gap-1">
+            <XCircle className="h-3 w-3" /> Cancelado
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary">Free</Badge>;
+        return (
+          <Badge variant="secondary">Desconhecido</Badge>
+        );
     }
   };
 
@@ -109,8 +146,8 @@ export default function AdminSubscriptions() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Assinaturas</h1>
-          <p className="text-muted-foreground">Histórico de cobranças e planos</p>
+          <h1 className="text-2xl font-bold text-foreground">Gerenciar Assinaturas</h1>
+          <p className="text-muted-foreground">Ative, cancele ou renove assinaturas dos usuários</p>
         </div>
         <Button variant="outline" className="gap-2">
           <Download className="h-4 w-4" />
@@ -120,15 +157,28 @@ export default function AdminSubscriptions() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-6 mb-8">
+        <Card className="border-primary/30 bg-primary-soft/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-primary-soft flex items-center justify-center">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalUsers}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card className="border-success/30 bg-success-soft/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-2xl bg-success-soft flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-success" />
+                <CheckCircle className="h-6 w-6 text-success" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">MRR Atual</p>
-                <p className="text-2xl font-bold text-success">R$ {stats.mrr.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Ativos</p>
+                <p className="text-2xl font-bold text-success">{stats.activeUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -137,11 +187,11 @@ export default function AdminSubscriptions() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-2xl bg-primary-soft flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-primary" />
+                <Timer className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Pagos</p>
-                <p className="text-2xl font-bold text-foreground">R$ {totalPaid.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Em Trial</p>
+                <p className="text-2xl font-bold text-foreground">{stats.trialUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -153,21 +203,8 @@ export default function AdminSubscriptions() {
                 <Clock className="h-6 w-6 text-warning" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Pendentes</p>
-                <p className="text-2xl font-bold text-foreground">R$ {totalPending.toFixed(2)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-destructive-soft flex items-center justify-center">
-                <XCircle className="h-6 w-6 text-destructive" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Falharam</p>
-                <p className="text-2xl font-bold text-foreground">R$ {totalFailed.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Expirados</p>
+                <p className="text-2xl font-bold text-foreground">{stats.expiredUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -186,29 +223,20 @@ export default function AdminSubscriptions() {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40 h-12">
+          <SelectTrigger className="w-48 h-12">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="paid">Pagos</SelectItem>
-            <SelectItem value="pending">Pendentes</SelectItem>
-            <SelectItem value="failed">Falharam</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={planFilter} onValueChange={setPlanFilter}>
-          <SelectTrigger className="w-40 h-12">
-            <SelectValue placeholder="Plano" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os planos</SelectItem>
-            <SelectItem value="pro">Pro</SelectItem>
-            <SelectItem value="business">Business</SelectItem>
+            <SelectItem value="all">Todos os Status</SelectItem>
+            <SelectItem value="trial">Em Trial</SelectItem>
+            <SelectItem value="active">Ativos</SelectItem>
+            <SelectItem value="expired">Expirados</SelectItem>
+            <SelectItem value="cancelled">Cancelados</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* Subscriptions Table */}
+      {/* Users Table */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -216,17 +244,17 @@ export default function AdminSubscriptions() {
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left py-4 px-6 text-sm font-medium text-muted-foreground">Usuário</th>
-                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Plano</th>
-                  <th className="text-right py-4 px-6 text-sm font-medium text-muted-foreground">Valor</th>
                   <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Método</th>
-                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Data</th>
+                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Trial Expira</th>
+                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Dias Restantes</th>
+                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Cadastro</th>
+                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredSubscriptions.map((sub, index) => (
+                {filteredUsers.map((user, index) => (
                   <tr 
-                    key={sub.id} 
+                    key={user.id} 
                     className="border-b border-border/50 hover:bg-muted/30 transition-colors animate-fade-in"
                     style={{ animationDelay: `${index * 30}ms` }}
                   >
@@ -234,40 +262,112 @@ export default function AdminSubscriptions() {
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary-soft flex items-center justify-center">
                           <span className="text-sm font-bold text-primary">
-                            {sub.user.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                            {user.full_name.split(' ').map(n => n[0]).slice(0, 2).join('')}
                           </span>
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">{sub.user}</p>
-                          <p className="text-sm text-muted-foreground">{sub.email}</p>
+                          <p className="font-semibold text-foreground">{user.full_name}</p>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-6 text-center">
-                      {getPlanBadge(sub.plan)}
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="font-bold text-foreground">R$ {sub.amount.toFixed(2)}</span>
+                      {getStatusBadge(user.subscription_status)}
                     </td>
                     <td className="py-4 px-6 text-center">
-                      {getStatusBadge(sub.status)}
+                      {user.trial_ends_at ? (
+                        <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {new Date(user.trial_ends_at).toLocaleDateString('pt-BR')}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-center">
-                      <span className="text-sm text-muted-foreground">{sub.method}</span>
+                      {user.days_remaining !== null ? (
+                        <Badge 
+                          variant={user.days_remaining <= 3 ? "destructive" : user.days_remaining <= 7 ? "outline" : "secondary"}
+                          className="gap-1"
+                        >
+                          {user.days_remaining > 0 ? `${user.days_remaining} dias` : "Expirado"}
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="h-3.5 w-3.5" />
-                        {new Date(sub.date).toLocaleDateString('pt-BR')}
+                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
                       </div>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => handleAction("activate", user)}
+                            disabled={user.subscription_status === "active"}
+                          >
+                            <Play className="h-4 w-4 mr-2 text-success" />
+                            Ativar Assinatura
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleAction("renew", user)}
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2 text-primary" />
+                            Renovar Trial
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleAction("expire", user)}
+                            disabled={user.subscription_status === "expired"}
+                          >
+                            <Clock className="h-4 w-4 mr-2 text-warning" />
+                            Expirar Assinatura
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleAction("cancel", user)}
+                            disabled={user.subscription_status === "cancelled"}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Pause className="h-4 w-4 mr-2" />
+                            Cancelar Assinatura
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                      Nenhum usuário encontrado
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
+
+      {/* Action Dialog */}
+      {selectedUser && (
+        <SubscriptionActionDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          action={selectedAction}
+          userName={selectedUser.full_name}
+          onConfirm={handleConfirmAction}
+          isLoading={isActionLoading}
+        />
+      )}
     </AdminLayout>
   );
 }

@@ -7,11 +7,12 @@ import {
   Mail,
   Loader2,
   Users,
-  Shield,
-  Filter
+  Timer,
+  CheckCircle,
+  Clock
 } from "lucide-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -44,25 +45,19 @@ import { toast } from "sonner";
 export default function AdminUsers() {
   const { users, stats, isLoading } = useAdminStats();
   const [search, setSearch] = useState("");
-  const [planFilter, setPlanFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [blockUser, setBlockUser] = useState<AdminUser | null>(null);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.full_name.toLowerCase().includes(search.toLowerCase()) ||
                          user.email.toLowerCase().includes(search.toLowerCase());
-    const matchesPlan = planFilter === "all" || user.plan === planFilter;
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-    return matchesSearch && matchesPlan && matchesStatus;
+    const matchesStatus = statusFilter === "all" || user.subscription_status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
   const handleBlockUser = () => {
     if (blockUser) {
-      toast.success(
-        blockUser.status === "active" 
-          ? `Usuário ${blockUser.full_name} bloqueado` 
-          : `Usuário ${blockUser.full_name} desbloqueado`
-      );
+      toast.success(`Ação realizada para ${blockUser.full_name}`);
       setBlockUser(null);
     }
   };
@@ -71,21 +66,18 @@ export default function AdminUsers() {
     toast.success(`Email enviado para ${user.email}`);
   };
 
-  const getStatusBadge = (status: string) => {
-    if (status === "active") {
-      return <Badge className="bg-success-soft text-success border-0">Ativo</Badge>;
-    }
-    return <Badge className="bg-destructive-soft text-destructive border-0">Bloqueado</Badge>;
-  };
-
-  const getPlanBadge = (plan: string) => {
-    switch (plan) {
-      case "pro":
-        return <Badge className="bg-primary-soft text-primary border-0">Pro</Badge>;
-      case "business":
-        return <Badge className="bg-success-soft text-success border-0">Business</Badge>;
+  const getStatusBadge = (status: string | null) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-success-soft text-success border-0 gap-1"><CheckCircle className="h-3 w-3" />Ativo</Badge>;
+      case "trial":
+        return <Badge className="bg-primary-soft text-primary border-0 gap-1"><Timer className="h-3 w-3" />Trial</Badge>;
+      case "expired":
+        return <Badge className="bg-warning-soft text-warning border-0 gap-1"><Clock className="h-3 w-3" />Expirado</Badge>;
+      case "cancelled":
+        return <Badge className="bg-destructive-soft text-destructive border-0 gap-1"><UserX className="h-3 w-3" />Cancelado</Badge>;
       default:
-        return <Badge variant="secondary">Free</Badge>;
+        return <Badge variant="secondary">Desconhecido</Badge>;
     }
   };
 
@@ -131,7 +123,7 @@ export default function AdminUsers() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-2xl bg-success-soft flex items-center justify-center">
-                <UserCheck className="h-6 w-6 text-success" />
+                <CheckCircle className="h-6 w-6 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Ativos</p>
@@ -143,12 +135,12 @@ export default function AdminUsers() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-warning-soft flex items-center justify-center">
-                <Shield className="h-6 w-6 text-warning" />
+              <div className="h-12 w-12 rounded-2xl bg-primary-soft flex items-center justify-center">
+                <Timer className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Plano Pro</p>
-                <p className="text-2xl font-bold text-foreground">{stats.proUsers}</p>
+                <p className="text-sm text-muted-foreground">Em Trial</p>
+                <p className="text-2xl font-bold text-foreground">{stats.trialUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -156,12 +148,12 @@ export default function AdminUsers() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center">
-                <Users className="h-6 w-6 text-muted-foreground" />
+              <div className="h-12 w-12 rounded-2xl bg-warning-soft flex items-center justify-center">
+                <Clock className="h-6 w-6 text-warning" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Plano Free</p>
-                <p className="text-2xl font-bold text-foreground">{stats.freeUsers}</p>
+                <p className="text-sm text-muted-foreground">Expirados</p>
+                <p className="text-2xl font-bold text-foreground">{stats.expiredUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -179,25 +171,16 @@ export default function AdminUsers() {
             className="pl-12 h-12"
           />
         </div>
-        <Select value={planFilter} onValueChange={setPlanFilter}>
-          <SelectTrigger className="w-40 h-12">
-            <SelectValue placeholder="Plano" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os planos</SelectItem>
-            <SelectItem value="free">Free</SelectItem>
-            <SelectItem value="pro">Pro</SelectItem>
-            <SelectItem value="business">Business</SelectItem>
-          </SelectContent>
-        </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40 h-12">
+          <SelectTrigger className="w-48 h-12">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="all">Todos os Status</SelectItem>
+            <SelectItem value="trial">Em Trial</SelectItem>
             <SelectItem value="active">Ativos</SelectItem>
-            <SelectItem value="blocked">Bloqueados</SelectItem>
+            <SelectItem value="expired">Expirados</SelectItem>
+            <SelectItem value="cancelled">Cancelados</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -211,9 +194,8 @@ export default function AdminUsers() {
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left py-4 px-6 text-sm font-medium text-muted-foreground">Usuário</th>
                   <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Plano</th>
-                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Receitas</th>
-                  <th className="text-right py-4 px-6 text-sm font-medium text-muted-foreground">Receita Total</th>
+                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Trial Expira</th>
+                  <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Dias Restantes</th>
                   <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Cadastro</th>
                   <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Ações</th>
                 </tr>
@@ -239,16 +221,27 @@ export default function AdminUsers() {
                       </div>
                     </td>
                     <td className="py-4 px-6 text-center">
-                      {getStatusBadge(user.status)}
+                      {getStatusBadge(user.subscription_status)}
                     </td>
                     <td className="py-4 px-6 text-center">
-                      {getPlanBadge(user.plan)}
+                      {user.trial_ends_at ? (
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(user.trial_ends_at).toLocaleDateString('pt-BR')}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-center">
-                      <span className="font-semibold text-foreground">{user.total_recipes}</span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="font-semibold text-foreground">R$ {user.total_revenue.toFixed(2)}</span>
+                      {user.days_remaining !== null ? (
+                        <Badge 
+                          variant={user.days_remaining <= 3 ? "destructive" : user.days_remaining <= 7 ? "outline" : "secondary"}
+                        >
+                          {user.days_remaining > 0 ? `${user.days_remaining} dias` : "Expirado"}
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-center text-sm text-muted-foreground">
                       {new Date(user.created_at).toLocaleDateString('pt-BR')}
@@ -266,23 +259,22 @@ export default function AdminUsers() {
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => setBlockUser(user)} 
-                            className={`gap-2 ${user.status === "active" ? "text-destructive" : "text-success"}`}
+                            className="gap-2 text-destructive"
                           >
-                            {user.status === "active" ? (
-                              <>
-                                <UserX className="h-4 w-4" /> Bloquear
-                              </>
-                            ) : (
-                              <>
-                                <UserCheck className="h-4 w-4" /> Desbloquear
-                              </>
-                            )}
+                            <UserX className="h-4 w-4" /> Bloquear
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
                   </tr>
                 ))}
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                      Nenhum usuário encontrado
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -293,26 +285,18 @@ export default function AdminUsers() {
       <AlertDialog open={!!blockUser} onOpenChange={() => setBlockUser(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {blockUser?.status === "active" ? "Bloquear usuário?" : "Desbloquear usuário?"}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Bloquear usuário?</AlertDialogTitle>
             <AlertDialogDescription>
-              {blockUser?.status === "active" 
-                ? `O usuário ${blockUser?.full_name} não poderá mais acessar a plataforma.`
-                : `O usuário ${blockUser?.full_name} terá acesso restaurado à plataforma.`
-              }
+              O usuário {blockUser?.full_name} não poderá mais acessar a plataforma.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleBlockUser}
-              className={blockUser?.status === "active" 
-                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                : "bg-success text-white hover:bg-success/90"
-              }
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {blockUser?.status === "active" ? "Bloquear" : "Desbloquear"}
+              Bloquear
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
