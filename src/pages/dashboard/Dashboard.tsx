@@ -70,13 +70,13 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Olá, {getUserName()}! 🎂</h1>
-          <p className="text-muted-foreground">Aqui está o resumo da sua confeitaria</p>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">Olá, {getUserName()}! 🎂</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Aqui está o resumo da sua confeitaria</p>
         </div>
         <Link to="/dashboard/receitas/nova">
-          <Button className="gap-2">
+          <Button className="gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" />
             Nova Receita
           </Button>
@@ -84,7 +84,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
         {stats.map((stat) => (
           <Card key={stat.title} className="relative overflow-hidden">
             <CardContent className="pt-6">
@@ -125,7 +125,7 @@ export default function Dashboard() {
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Recipes */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">

@@ -55,7 +55,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-foreground text-background">
+    <aside className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 bg-foreground text-background">
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-6 border-b border-background/10">
