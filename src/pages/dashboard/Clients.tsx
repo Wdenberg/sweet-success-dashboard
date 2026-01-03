@@ -97,19 +97,19 @@ export default function Clients() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Meus Clientes</h1>
-          <p className="text-muted-foreground">Gerencie seu relacionamento com clientes</p>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">Meus Clientes</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Gerencie seu relacionamento com clientes</p>
         </div>
-        <Button className="gap-2" onClick={handleNewClient}>
+        <Button className="gap-2 w-full sm:w-auto" onClick={handleNewClient}>
           <Plus className="h-4 w-4" />
           Novo Cliente
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-8">
         {statsConfig.map((stat, index) => (
           <Card key={stat.title} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
             <CardContent className="pt-6">

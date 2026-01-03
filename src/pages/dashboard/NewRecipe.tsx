@@ -213,7 +213,7 @@ export default function NewRecipe() {
     <DashboardLayout>
       <div className="pb-32">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             <Link to="/dashboard/receitas">
               <Button variant="ghost" size="icon" className="rounded-xl">
@@ -221,15 +221,15 @@ export default function NewRecipe() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">
                 {isEditing ? "Editar Receita" : "Nova Ficha Técnica"}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {isEditing ? "Atualize os dados da sua receita" : "Calcule o preço ideal para sua receita"}
               </p>
             </div>
           </div>
-          <Button onClick={handleSave} disabled={isSaving || !name.trim()} className="gap-2">
+          <Button onClick={handleSave} disabled={isSaving || !name.trim()} className="gap-2 w-full sm:w-auto">
             {isSaving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -239,7 +239,7 @@ export default function NewRecipe() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Basic Info */}
           <div className="space-y-6">
             {/* Image Upload */}
@@ -320,7 +320,7 @@ export default function NewRecipe() {
           </div>
 
           {/* Right Column - Ingredients & Profit */}
-          <div className="col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* Ingredients */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -331,8 +331,8 @@ export default function NewRecipe() {
                 </Button>
               </CardHeader>
               <CardContent>
-                {/* Header Labels */}
-                <div className="grid grid-cols-12 gap-3 mb-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                {/* Header Labels - Hidden on mobile */}
+                <div className="hidden md:grid grid-cols-12 gap-3 mb-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   <div className="col-span-3">Ingrediente</div>
                   <div className="col-span-1 text-center">Qtd</div>
                   <div className="col-span-1 text-center">Un.</div>
