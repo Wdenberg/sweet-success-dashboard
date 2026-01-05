@@ -14,59 +14,36 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-
-interface ShoppingItem {
-  id: string;
-  name: string;
-  quantity: string;
-  estimatedPrice: number;
-  category: string;
-  checked: boolean;
-}
-
-const initialItems: ShoppingItem[] = [
-  { id: "1", name: "Farinha de Trigo", quantity: "5kg", estimatedPrice: 25.90, category: "Ingredientes Secos", checked: false },
-  { id: "2", name: "Açúcar Refinado", quantity: "2kg", estimatedPrice: 8.50, category: "Ingredientes Secos", checked: false },
-  { id: "3", name: "Fermento em Pó", quantity: "100g", estimatedPrice: 6.90, category: "Ingredientes Secos", checked: true },
-  { id: "4", name: "Leite Integral", quantity: "2L", estimatedPrice: 9.80, category: "Laticínios", checked: false },
-  { id: "5", name: "Manteiga sem Sal", quantity: "500g", estimatedPrice: 18.90, category: "Laticínios", checked: false },
-  { id: "6", name: "Ovos", quantity: "30 un", estimatedPrice: 22.00, category: "Laticínios", checked: true },
-  { id: "7", name: "Chocolate em Pó", quantity: "400g", estimatedPrice: 15.90, category: "Chocolates", checked: false },
-  { id: "8", name: "Creme de Leite", quantity: "3 un", estimatedPrice: 12.00, category: "Laticínios", checked: false },
-];
+import { useShoppingList } from "@/hooks/useShoppingList";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ShoppingList() {
-  const [items, setItems] = useState<ShoppingItem[]>(initialItems);
+  const { items, isLoading, addItem, toggleItem, removeItem, clearChecked } = useShoppingList();
   const [newItem, setNewItem] = useState({ name: "", quantity: "", estimatedPrice: 0, category: "Ingredientes Secos" });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const categories = [...new Set(items.map(item => item.category))];
 
-  const toggleItem = (id: string) => {
-    setItems(prev => prev.map(item => 
-      item.id === id ? { ...item, checked: !item.checked } : item
-    ));
+  const handleToggleItem = (id: string, currentChecked: boolean) => {
+    toggleItem.mutate({ id, checked: !currentChecked });
   };
 
-  const removeItem = (id: string) => {
-    setItems(prev => prev.filter(item => item.id !== id));
-    toast.success("Item removido da lista");
+  const handleRemoveItem = (id: string) => {
+    removeItem.mutate(id);
   };
 
-  const addItem = () => {
+  const handleAddItem = () => {
     if (!newItem.name.trim()) {
       toast.error("Digite o nome do item");
       return;
     }
     
-    setItems(prev => [...prev, {
-      id: crypto.randomUUID(),
-      ...newItem,
-      checked: false,
-    }]);
-    setNewItem({ name: "", quantity: "", estimatedPrice: 0, category: "Ingredientes Secos" });
-    setIsDialogOpen(false);
-    toast.success("Item adicionado!");
+    addItem.mutate(newItem, {
+      onSuccess: () => {
+        setNewItem({ name: "", quantity: "", estimatedPrice: 0, category: "Ingredientes Secos" });
+        setIsDialogOpen(false);
+      },
+    });
   };
 
   const sendToWhatsApp = () => {
@@ -80,7 +57,7 @@ export default function ShoppingList() {
       categories.map(category => {
         const categoryItems = uncheckedItems.filter(i => i.category === category);
         if (categoryItems.length === 0) return "";
-        return `*${category}*\n${categoryItems.map(i => `☐ ${i.name} - ${i.quantity}`).join("\n")}`;
+        return `*${category}*\n${categoryItems.map(i => `☐ ${i.name} - ${i.quantity || ""}`).join("\n")}`;
       }).filter(Boolean).join("\n\n")
     }\n\n💰 Total Estimado: R$ ${uncheckedItems.reduce((sum, i) => sum + i.estimatedPrice, 0).toFixed(2)}`;
 
@@ -88,9 +65,28 @@ export default function ShoppingList() {
     window.open(`https://wa.me/?text=${encodedMessage}`, "_blank");
   };
 
-  const totalEstimated = items.reduce((sum, item) => sum + item.estimatedPrice, 0);
   const totalPending = items.filter(i => !i.checked).reduce((sum, item) => sum + item.estimatedPrice, 0);
   const checkedCount = items.filter(i => i.checked).length;
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-6">
+          <div className="col-span-2 space-y-6">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+          <Skeleton className="h-72 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -101,6 +97,17 @@ export default function ShoppingList() {
           <p className="text-muted-foreground">{items.length} itens • {checkedCount} comprados</p>
         </div>
         <div className="flex gap-3">
+          {checkedCount > 0 && (
+            <Button 
+              variant="outline" 
+              onClick={() => clearChecked.mutate()}
+              disabled={clearChecked.isPending}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Limpar Comprados
+            </Button>
+          )}
           <Button variant="outline" onClick={sendToWhatsApp} className="gap-2">
             <Send className="h-4 w-4" />
             Enviar no WhatsApp
@@ -153,109 +160,128 @@ export default function ShoppingList() {
                     onChange={(e) => setNewItem(prev => ({ ...prev, category: e.target.value }))}
                   />
                 </div>
-                <Button onClick={addItem} className="w-full">Adicionar</Button>
+                <Button 
+                  onClick={handleAddItem} 
+                  className="w-full"
+                  disabled={addItem.isPending}
+                >
+                  {addItem.isPending ? "Adicionando..." : "Adicionar"}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Items List */}
-        <div className="col-span-2 space-y-6">
-          {categories.map((category, catIndex) => {
-            const categoryItems = items.filter(item => item.category === category);
-            return (
-              <Card key={category} className="animate-fade-in" style={{ animationDelay: `${catIndex * 100}ms` }}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4 text-primary" />
-                    {category}
-                    <span className="text-sm font-normal text-muted-foreground">
-                      ({categoryItems.filter(i => !i.checked).length} pendentes)
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {categoryItems.map((item, index) => (
-                    <div 
-                      key={item.id}
-                      className={`flex items-center justify-between p-4 rounded-xl transition-all duration-200 group ${
-                        item.checked 
-                          ? "bg-success-soft/50 opacity-60" 
-                          : "bg-secondary/30 hover:bg-secondary/50"
-                      }`}
-                      style={{ animationDelay: `${(catIndex * 100) + (index * 50)}ms` }}
-                    >
-                      <div className="flex items-center gap-4">
-                        <Checkbox
-                          checked={item.checked}
-                          onCheckedChange={() => toggleItem(item.id)}
-                          className="h-5 w-5"
-                        />
-                        <div>
-                          <p className={`font-medium ${item.checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                            {item.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">{item.quantity}</p>
+      {items.length === 0 ? (
+        <Card className="p-12 text-center">
+          <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Lista vazia</h3>
+          <p className="text-muted-foreground mb-4">Adicione itens à sua lista de compras</p>
+          <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Adicionar primeiro item
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-3 gap-6">
+          {/* Items List */}
+          <div className="col-span-2 space-y-6">
+            {categories.map((category, catIndex) => {
+              const categoryItems = items.filter(item => item.category === category);
+              return (
+                <Card key={category} className="animate-fade-in" style={{ animationDelay: `${catIndex * 100}ms` }}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <ShoppingCart className="h-4 w-4 text-primary" />
+                      {category}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        ({categoryItems.filter(i => !i.checked).length} pendentes)
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {categoryItems.map((item, index) => (
+                      <div 
+                        key={item.id}
+                        className={`flex items-center justify-between p-4 rounded-xl transition-all duration-200 group ${
+                          item.checked 
+                            ? "bg-success-soft/50 opacity-60" 
+                            : "bg-secondary/30 hover:bg-secondary/50"
+                        }`}
+                        style={{ animationDelay: `${(catIndex * 100) + (index * 50)}ms` }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <Checkbox
+                            checked={item.checked}
+                            onCheckedChange={() => handleToggleItem(item.id, item.checked)}
+                            className="h-5 w-5"
+                          />
+                          <div>
+                            <p className={`font-medium ${item.checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                              {item.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">{item.quantity || ""}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="font-semibold text-foreground">
+                            R$ {item.estimatedPrice.toFixed(2)}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveItem(item.id)}
+                            disabled={removeItem.isPending}
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive-soft transition-all"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span className="font-semibold text-foreground">
-                          R$ {item.estimatedPrice.toFixed(2)}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeItem(item.id)}
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive-soft transition-all"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
 
-        {/* Summary Card */}
-        <div className="space-y-6">
-          <Card className="sticky top-8">
-            <CardHeader>
-              <CardTitle className="text-lg">Resumo da Compra</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center pb-4 border-b border-border">
-                <span className="text-muted-foreground">Total de Itens</span>
-                <span className="font-semibold text-foreground">{items.length}</span>
-              </div>
-              <div className="flex justify-between items-center pb-4 border-b border-border">
-                <span className="text-muted-foreground">Já Comprados</span>
-                <div className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-success" />
-                  <span className="font-semibold text-success">{checkedCount}</span>
+          {/* Summary Card */}
+          <div className="space-y-6">
+            <Card className="sticky top-8">
+              <CardHeader>
+                <CardTitle className="text-lg">Resumo da Compra</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center pb-4 border-b border-border">
+                  <span className="text-muted-foreground">Total de Itens</span>
+                  <span className="font-semibold text-foreground">{items.length}</span>
                 </div>
-              </div>
-              <div className="flex justify-between items-center pb-4 border-b border-border">
-                <span className="text-muted-foreground">Pendentes</span>
-                <span className="font-semibold text-warning">{items.length - checkedCount}</span>
-              </div>
-              <div className="flex justify-between items-center pt-2">
-                <span className="text-muted-foreground">Total Estimado</span>
-                <span className="text-2xl font-bold text-foreground">
-                  R$ {totalPending.toFixed(2)}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">
-                (apenas itens pendentes)
-              </p>
-            </CardContent>
-          </Card>
+                <div className="flex justify-between items-center pb-4 border-b border-border">
+                  <span className="text-muted-foreground">Já Comprados</span>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-success" />
+                    <span className="font-semibold text-success">{checkedCount}</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center pb-4 border-b border-border">
+                  <span className="text-muted-foreground">Pendentes</span>
+                  <span className="font-semibold text-warning">{items.length - checkedCount}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-muted-foreground">Total Estimado</span>
+                  <span className="text-2xl font-bold text-foreground">
+                    R$ {totalPending.toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  (apenas itens pendentes)
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      )}
     </DashboardLayout>
   );
 }
