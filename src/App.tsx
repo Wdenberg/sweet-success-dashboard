@@ -12,6 +12,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import NewRecipe from "./pages/dashboard/NewRecipe";
 import Recipes from "./pages/dashboard/Recipes";
 import ShoppingList from "./pages/dashboard/ShoppingList";
+import Settings from "./pages/dashboard/Settings";
 import Clients from "./pages/dashboard/Clients";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -66,6 +67,11 @@ const App = () => (
             <Route path="/dashboard/trial-expirado" element={
               <ProtectedRoute requireActiveSubscription={false}>
                 <TrialExpired />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/configuracoes" element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } />
 
