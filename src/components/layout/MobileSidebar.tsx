@@ -130,6 +130,21 @@ export function MobileSidebar({ variant = "dashboard" }: MobileSidebarProps) {
               </button>
             )}
 
+            {variant === "dashboard" && (
+              <button
+                onClick={() => handleNavigate("/dashboard/configuracoes")}
+                className={cn(
+                  "flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                  location.pathname === "/dashboard/configuracoes"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-background/70 hover:text-background hover:bg-background/10"
+                )}
+              >
+                <Settings className="h-5 w-5" />
+                Configurações
+              </button>
+            )}
+
             {variant === "admin" && (
               <button
                 onClick={() => handleNavigate("/dashboard")}
