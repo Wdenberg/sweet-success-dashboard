@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   CakeSlice,
-  Shield
+  Shield,
+  Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +24,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Calculator, label: "Nova Receita", path: "/dashboard/receitas/nova" },
   { icon: CakeSlice, label: "Minhas Receitas", path: "/dashboard/receitas" },
+  { icon: Wallet, label: "Fluxo de Caixa", path: "/dashboard/financeiro" },
   { icon: ShoppingCart, label: "Lista de Compras", path: "/dashboard/compras" },
   { icon: Users, label: "Clientes", path: "/dashboard/clientes" },
 ];

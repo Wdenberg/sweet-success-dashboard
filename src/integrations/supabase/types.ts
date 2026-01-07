@@ -62,6 +62,45 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          expense_date: string
+          id: string
+          notes: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description: string
+          expense_date?: string
+          id?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          expense_date?: string
+          id?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ingredients: {
         Row: {
           category: string | null
@@ -269,6 +308,110 @@ export type Database = {
         }
         Relationships: []
       }
+      sale_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_name: string
+          quantity: number
+          recipe_id: string | null
+          sale_id: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_name: string
+          quantity?: number
+          recipe_id?: string | null
+          sale_id: string
+          total_price?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_name?: string
+          quantity?: number
+          recipe_id?: string | null
+          sale_id?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          delivery_date: string | null
+          delivery_status: Database["public"]["Enums"]["delivery_status"]
+          discount: number
+          id: string
+          notes: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          sale_date: string
+          subtotal: number
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          delivery_date?: string | null
+          delivery_status?: Database["public"]["Enums"]["delivery_status"]
+          discount?: number
+          id?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          sale_date?: string
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          delivery_date?: string | null
+          delivery_status?: Database["public"]["Enums"]["delivery_status"]
+          discount?: number
+          id?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          sale_date?: string
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shopping_list: {
         Row: {
           category: string
@@ -342,6 +485,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "confectioner"
       client_status: "active" | "pending" | "inactive"
+      delivery_status:
+        | "pending"
+        | "in_production"
+        | "ready"
+        | "delivered"
+        | "cancelled"
+      payment_method: "pix" | "credit_card" | "debit_card" | "cash" | "transfer"
       subscription_status: "trial" | "active" | "expired" | "cancelled"
     }
     CompositeTypes: {
@@ -472,6 +622,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "confectioner"],
       client_status: ["active", "pending", "inactive"],
+      delivery_status: [
+        "pending",
+        "in_production",
+        "ready",
+        "delivered",
+        "cancelled",
+      ],
+      payment_method: ["pix", "credit_card", "debit_card", "cash", "transfer"],
       subscription_status: ["trial", "active", "expired", "cancelled"],
     },
   },
