@@ -14,6 +14,7 @@ import Recipes from "./pages/dashboard/Recipes";
 import ShoppingList from "./pages/dashboard/ShoppingList";
 import Settings from "./pages/dashboard/Settings";
 import Clients from "./pages/dashboard/Clients";
+import CashFlow from "./pages/dashboard/CashFlow";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
@@ -62,6 +63,11 @@ const App = () => (
             <Route path="/dashboard/clientes" element={
               <ProtectedRoute>
                 <Clients />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/financeiro" element={
+              <ProtectedRoute>
+                <CashFlow />
               </ProtectedRoute>
             } />
             <Route path="/dashboard/trial-expirado" element={

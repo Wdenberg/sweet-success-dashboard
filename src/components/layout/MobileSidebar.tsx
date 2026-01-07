@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChefHat, CakeSlice, ShoppingCart, Users, LogOut, Settings, Shield } from "lucide-react";
+import { Menu, X, ChefHat, CakeSlice, ShoppingCart, Users, LogOut, Settings, Shield, Wallet } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ interface MobileSidebarProps {
 
 const dashboardMenuItems = [
   { icon: CakeSlice, label: "Receitas", path: "/dashboard/receitas" },
+  { icon: Wallet, label: "Financeiro", path: "/dashboard/financeiro" },
   { icon: ShoppingCart, label: "Compras", path: "/dashboard/compras" },
   { icon: Users, label: "Clientes", path: "/dashboard/clientes" },
 ];
