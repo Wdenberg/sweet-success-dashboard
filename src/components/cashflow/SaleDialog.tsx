@@ -133,12 +133,12 @@ export function SaleDialog({ open, onOpenChange }: SaleDialogProps) {
           {/* Cliente */}
           <div className="space-y-2">
             <Label>Cliente (opcional)</Label>
-            <Select value={clientId} onValueChange={setClientId}>
+            <Select value={clientId || "none"} onValueChange={(v) => setClientId(v === "none" ? "" : v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um cliente" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sem cliente</SelectItem>
+                <SelectItem value="none">Sem cliente</SelectItem>
                 {clients?.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
                     {client.name}
