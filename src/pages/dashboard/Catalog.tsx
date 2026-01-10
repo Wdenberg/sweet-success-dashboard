@@ -9,15 +9,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, ImageIcon, Loader2 } from "lucide-react";
+import { Plus, Search, ImageIcon, Loader2, Link, Check } from "lucide-react";
 import { useCatalog, CatalogItem, CATALOG_CATEGORIES } from "@/hooks/useCatalog";
 import { CatalogItemCard } from "@/components/catalog/CatalogItemCard";
 import { CatalogItemDialog } from "@/components/catalog/CatalogItemDialog";
 import { WhatsAppShareDialog } from "@/components/catalog/WhatsAppShareDialog";
 import { DeleteCatalogItemDialog } from "@/components/catalog/DeleteCatalogItemDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Catalog = () => {
+  const { user } = useAuth();
   const { items, isLoading, deleteItem } = useCatalog();
+  const [linkCopied, setLinkCopied] = useState(false);
   
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -70,6 +74,17 @@ const Catalog = () => {
     setDialogOpen(true);
   };
 
+  const copyPublicLink = async () => {
+    if (!user?.id) return;
+    
+    const publicUrl = `${window.location.origin}/catalogo/${user.id}`;
+    await navigator.clipboard.writeText(publicUrl);
+    setLinkCopied(true);
+    toast.success("Link copiado para a área de transferência!");
+    
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -81,10 +96,20 @@ const Catalog = () => {
               {items?.length || 0} produto{items?.length !== 1 ? "s" : ""} cadastrado{items?.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <Button onClick={handleNewItem}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Produto
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={copyPublicLink}>
+              {linkCopied ? (
+                <Check className="h-4 w-4 mr-2" />
+              ) : (
+                <Link className="h-4 w-4 mr-2" />
+              )}
+              {linkCopied ? "Copiado!" : "Copiar Link"}
+            </Button>
+            <Button onClick={handleNewItem}>
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Produto
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
