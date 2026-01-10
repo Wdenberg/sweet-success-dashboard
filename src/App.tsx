@@ -20,6 +20,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
 import TrialExpired from "./pages/dashboard/TrialExpired";
+import PublicCatalog from "./pages/PublicCatalog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/catalogo/:userId" element={<PublicCatalog />} />
             
             {/* Dashboard Routes */}
             <Route path="/dashboard" element={
