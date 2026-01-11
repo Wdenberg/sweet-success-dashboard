@@ -537,7 +537,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_catalog_profiles: {
+        Row: {
+          business_name: string | null
+          catalog_background_color: string | null
+          catalog_banner_url: string | null
+          catalog_logo_url: string | null
+          catalog_primary_color: string | null
+          catalog_secondary_color: string | null
+          catalog_show_prices: boolean | null
+          catalog_text_color: string | null
+          catalog_whatsapp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          catalog_background_color?: string | null
+          catalog_banner_url?: string | null
+          catalog_logo_url?: string | null
+          catalog_primary_color?: string | null
+          catalog_secondary_color?: string | null
+          catalog_show_prices?: boolean | null
+          catalog_text_color?: string | null
+          catalog_whatsapp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          catalog_background_color?: string | null
+          catalog_banner_url?: string | null
+          catalog_logo_url?: string | null
+          catalog_primary_color?: string | null
+          catalog_secondary_color?: string | null
+          catalog_show_prices?: boolean | null
+          catalog_text_color?: string | null
+          catalog_whatsapp?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
