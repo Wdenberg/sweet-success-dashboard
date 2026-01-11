@@ -16,6 +16,7 @@ import Settings from "./pages/dashboard/Settings";
 import Clients from "./pages/dashboard/Clients";
 import CashFlow from "./pages/dashboard/CashFlow";
 import Catalog from "./pages/dashboard/Catalog";
+import CatalogSettings from "./pages/dashboard/CatalogSettings";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
@@ -76,6 +77,11 @@ const App = () => (
             <Route path="/dashboard/catalogo" element={
               <ProtectedRoute>
                 <Catalog />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/catalogo/personalizar" element={
+              <ProtectedRoute>
+                <CatalogSettings />
               </ProtectedRoute>
             } />
             <Route path="/dashboard/trial-expirado" element={

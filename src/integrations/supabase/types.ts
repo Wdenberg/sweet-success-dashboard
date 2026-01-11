@@ -186,6 +186,14 @@ export type Database = {
         Row: {
           avatar_url: string | null
           business_name: string | null
+          catalog_background_color: string | null
+          catalog_banner_url: string | null
+          catalog_logo_url: string | null
+          catalog_primary_color: string | null
+          catalog_secondary_color: string | null
+          catalog_show_prices: boolean | null
+          catalog_text_color: string | null
+          catalog_whatsapp: string | null
           created_at: string
           full_name: string
           id: string
@@ -200,6 +208,14 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           business_name?: string | null
+          catalog_background_color?: string | null
+          catalog_banner_url?: string | null
+          catalog_logo_url?: string | null
+          catalog_primary_color?: string | null
+          catalog_secondary_color?: string | null
+          catalog_show_prices?: boolean | null
+          catalog_text_color?: string | null
+          catalog_whatsapp?: string | null
           created_at?: string
           full_name: string
           id?: string
@@ -214,6 +230,14 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           business_name?: string | null
+          catalog_background_color?: string | null
+          catalog_banner_url?: string | null
+          catalog_logo_url?: string | null
+          catalog_primary_color?: string | null
+          catalog_secondary_color?: string | null
+          catalog_show_prices?: boolean | null
+          catalog_text_color?: string | null
+          catalog_whatsapp?: string | null
           created_at?: string
           full_name?: string
           id?: string

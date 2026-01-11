@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, ImageIcon, Loader2, Link, Check } from "lucide-react";
+import { Plus, Search, ImageIcon, Loader2, Link, Check, Palette } from "lucide-react";
 import { useCatalog, CatalogItem, CATALOG_CATEGORIES } from "@/hooks/useCatalog";
 import { CatalogItemCard } from "@/components/catalog/CatalogItemCard";
 import { CatalogItemDialog } from "@/components/catalog/CatalogItemDialog";
@@ -19,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const Catalog = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { items, isLoading, deleteItem } = useCatalog();
   const [linkCopied, setLinkCopied] = useState(false);
@@ -104,6 +106,10 @@ const Catalog = () => {
                 <Link className="h-4 w-4 mr-2" />
               )}
               {linkCopied ? "Copiado!" : "Copiar Link"}
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/dashboard/catalogo/personalizar")}>
+              <Palette className="h-4 w-4 mr-2" />
+              Personalizar
             </Button>
             <Button onClick={handleNewItem}>
               <Plus className="h-4 w-4 mr-2" />

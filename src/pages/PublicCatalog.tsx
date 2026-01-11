@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ImageOff, Store } from "lucide-react";
+import { ImageOff, Store, MessageCircle } from "lucide-react";
+import { DEFAULT_SETTINGS } from "@/hooks/useCatalogSettings";
 
 const PublicCatalog = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -15,7 +16,7 @@ const PublicCatalog = () => {
       if (!userId) return null;
       const { data, error } = await supabase
         .from("profiles")
-        .select("business_name, full_name")
+        .select("business_name, full_name, catalog_logo_url, catalog_banner_url, catalog_primary_color, catalog_secondary_color, catalog_background_color, catalog_text_color, catalog_show_prices, catalog_whatsapp")
         .eq("user_id", userId)
         .single();
       
@@ -43,12 +44,32 @@ const PublicCatalog = () => {
   });
 
   const storeName = profile?.business_name || profile?.full_name || "Catálogo";
+  
+  // Get customization settings with defaults
+  const settings = {
+    logo: profile?.catalog_logo_url,
+    banner: profile?.catalog_banner_url,
+    primaryColor: profile?.catalog_primary_color || DEFAULT_SETTINGS.catalog_primary_color,
+    secondaryColor: profile?.catalog_secondary_color || DEFAULT_SETTINGS.catalog_secondary_color,
+    backgroundColor: profile?.catalog_background_color || DEFAULT_SETTINGS.catalog_background_color,
+    textColor: profile?.catalog_text_color || DEFAULT_SETTINGS.catalog_text_color,
+    showPrices: profile?.catalog_show_prices ?? DEFAULT_SETTINGS.catalog_show_prices,
+    whatsapp: profile?.catalog_whatsapp,
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(price);
+  };
+
+  const handleWhatsAppClick = () => {
+    if (settings.whatsapp) {
+      const cleanNumber = settings.whatsapp.replace(/\D/g, "");
+      const fullNumber = cleanNumber.startsWith("55") ? cleanNumber : `55${cleanNumber}`;
+      window.open(`https://wa.me/${fullNumber}`, "_blank");
+    }
   };
 
   if (!userId) {
@@ -68,17 +89,56 @@ const PublicCatalog = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <div 
+      className="min-h-screen"
+      style={{ backgroundColor: settings.backgroundColor }}
+    >
+      {/* Banner */}
+      {settings.banner && (
+        <div className="w-full h-48 md:h-64 overflow-hidden">
+          <img
+            src={settings.banner}
+            alt="Banner"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
       {/* Header */}
-      <header className="bg-card border-b sticky top-0 z-10">
+      <header 
+        className="sticky top-0 z-10 border-b"
+        style={{ 
+          backgroundColor: settings.backgroundColor,
+          borderColor: `${settings.textColor}20`,
+        }}
+      >
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Store className="h-6 w-6 text-primary" />
-            </div>
+            {settings.logo ? (
+              <img
+                src={settings.logo}
+                alt={storeName}
+                className="h-12 w-12 rounded-full object-cover"
+              />
+            ) : (
+              <div 
+                className="h-12 w-12 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: `${settings.primaryColor}20` }}
+              >
+                <Store className="h-6 w-6" style={{ color: settings.primaryColor }} />
+              </div>
+            )}
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{storeName}</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 
+                className="text-2xl font-bold"
+                style={{ color: settings.textColor }}
+              >
+                {storeName}
+              </h1>
+              <p 
+                className="text-sm"
+                style={{ color: `${settings.textColor}99` }}
+              >
                 {items?.length || 0} produto{items?.length !== 1 ? "s" : ""} disponíve{items?.length !== 1 ? "is" : "l"}
               </p>
             </div>
@@ -107,6 +167,7 @@ const PublicCatalog = () => {
               <Card
                 key={item.id}
                 className="overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                style={{ backgroundColor: settings.backgroundColor }}
               >
                 <div className="aspect-[4/3] relative bg-muted overflow-hidden">
                   {item.image_url ? (
@@ -122,24 +183,36 @@ const PublicCatalog = () => {
                   )}
                   {item.category && (
                     <Badge
-                      variant="secondary"
-                      className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm"
+                      className="absolute top-3 left-3 backdrop-blur-sm"
+                      style={{ 
+                        backgroundColor: `${settings.backgroundColor}E6`,
+                        color: settings.textColor,
+                      }}
                     >
                       {item.category}
                     </Badge>
                   )}
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg text-foreground mb-1 line-clamp-1">
+                  <h3 
+                    className="font-semibold text-lg mb-1 line-clamp-1"
+                    style={{ color: settings.textColor }}
+                  >
                     {item.name}
                   </h3>
                   {item.description && (
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    <p 
+                      className="text-sm mb-3 line-clamp-2"
+                      style={{ color: `${settings.textColor}99` }}
+                    >
                       {item.description}
                     </p>
                   )}
-                  {item.price && (
-                    <p className="text-xl font-bold text-primary">
+                  {settings.showPrices && item.price && (
+                    <p 
+                      className="text-xl font-bold"
+                      style={{ color: settings.primaryColor }}
+                    >
                       {formatPrice(item.price)}
                     </p>
                   )}
@@ -149,21 +222,48 @@ const PublicCatalog = () => {
           </div>
         ) : (
           <div className="text-center py-16">
-            <Store className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">
+            <Store 
+              className="h-16 w-16 mx-auto mb-4"
+              style={{ color: `${settings.textColor}66` }}
+            />
+            <h2 
+              className="text-xl font-semibold mb-2"
+              style={{ color: settings.textColor }}
+            >
               Nenhum produto disponível
             </h2>
-            <p className="text-muted-foreground">
+            <p style={{ color: `${settings.textColor}99` }}>
               Este catálogo ainda não possui produtos cadastrados.
             </p>
           </div>
         )}
       </main>
 
+      {/* WhatsApp Floating Button */}
+      {settings.whatsapp && (
+        <button
+          onClick={handleWhatsAppClick}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform z-50"
+          style={{ backgroundColor: "#25D366" }}
+          aria-label="Contato via WhatsApp"
+        >
+          <MessageCircle className="h-7 w-7 text-white" />
+        </button>
+      )}
+
       {/* Footer */}
-      <footer className="border-t bg-card mt-auto">
+      <footer 
+        className="border-t mt-auto"
+        style={{ 
+          backgroundColor: settings.backgroundColor,
+          borderColor: `${settings.textColor}20`,
+        }}
+      >
         <div className="container mx-auto px-4 py-6 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p 
+            className="text-sm"
+            style={{ color: `${settings.textColor}66` }}
+          >
             Catálogo criado com ❤️
           </p>
         </div>
