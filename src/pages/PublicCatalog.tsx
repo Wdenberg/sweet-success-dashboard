@@ -14,14 +14,12 @@ const PublicCatalog = () => {
     queryKey: ["public-profile", userId],
     queryFn: async () => {
       if (!userId) return null;
+      // Use secure RPC function that only exposes catalog-related fields
       const { data, error } = await supabase
-        .from("profiles")
-        .select("business_name, full_name, catalog_logo_url, catalog_banner_url, catalog_primary_color, catalog_secondary_color, catalog_background_color, catalog_text_color, catalog_show_prices, catalog_whatsapp")
-        .eq("user_id", userId)
-        .single();
+        .rpc("get_public_catalog_profile", { p_user_id: userId });
       
-      if (error) return null;
-      return data;
+      if (error || !data || data.length === 0) return null;
+      return data[0];
     },
     enabled: !!userId,
   });
@@ -43,7 +41,7 @@ const PublicCatalog = () => {
     enabled: !!userId,
   });
 
-  const storeName = profile?.business_name || profile?.full_name || "Catálogo";
+  const storeName = profile?.business_name || "Catálogo";
   
   // Get customization settings with defaults
   const settings = {

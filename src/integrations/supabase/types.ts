@@ -537,47 +537,23 @@ export type Database = {
       }
     }
     Views: {
-      public_catalog_profiles: {
-        Row: {
-          business_name: string | null
-          catalog_background_color: string | null
-          catalog_banner_url: string | null
-          catalog_logo_url: string | null
-          catalog_primary_color: string | null
-          catalog_secondary_color: string | null
-          catalog_show_prices: boolean | null
-          catalog_text_color: string | null
-          catalog_whatsapp: string | null
-          user_id: string | null
-        }
-        Insert: {
-          business_name?: string | null
-          catalog_background_color?: string | null
-          catalog_banner_url?: string | null
-          catalog_logo_url?: string | null
-          catalog_primary_color?: string | null
-          catalog_secondary_color?: string | null
-          catalog_show_prices?: boolean | null
-          catalog_text_color?: string | null
-          catalog_whatsapp?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          business_name?: string | null
-          catalog_background_color?: string | null
-          catalog_banner_url?: string | null
-          catalog_logo_url?: string | null
-          catalog_primary_color?: string | null
-          catalog_secondary_color?: string | null
-          catalog_show_prices?: boolean | null
-          catalog_text_color?: string | null
-          catalog_whatsapp?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_public_catalog_profile: {
+        Args: { p_user_id: string }
+        Returns: {
+          business_name: string
+          catalog_background_color: string
+          catalog_banner_url: string
+          catalog_logo_url: string
+          catalog_primary_color: string
+          catalog_secondary_color: string
+          catalog_show_prices: boolean
+          catalog_text_color: string
+          catalog_whatsapp: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
