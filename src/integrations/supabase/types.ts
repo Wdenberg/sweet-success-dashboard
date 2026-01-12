@@ -540,6 +540,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_catalog_items: {
+        Args: { p_user_id: string }
+        Returns: {
+          category: string
+          description: string
+          display_order: number
+          id: string
+          image_url: string
+          name: string
+          price: number
+        }[]
+      }
       get_public_catalog_profile: {
         Args: { p_user_id: string }
         Returns: {
