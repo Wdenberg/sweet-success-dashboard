@@ -28,15 +28,12 @@ const PublicCatalog = () => {
     queryKey: ["public-catalog", userId],
     queryFn: async () => {
       if (!userId) return [];
+      // Use secure RPC function that doesn't expose user_id
       const { data, error } = await supabase
-        .from("catalog_items")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("is_active", true)
-        .order("display_order", { ascending: true });
+        .rpc("get_public_catalog_items", { p_user_id: userId });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!userId,
   });
