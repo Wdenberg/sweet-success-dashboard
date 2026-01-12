@@ -5,15 +5,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Wallet, TrendingUp, TrendingDown, Calendar, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Plus, Wallet, TrendingUp, TrendingDown, Calendar, MoreHorizontal, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useSales } from "@/hooks/useSales";
+import { useSales, DeliveryStatus } from "@/hooks/useSales";
 import { useExpenses } from "@/hooks/useExpenses";
 import { SaleDialog } from "@/components/cashflow/SaleDialog";
 import { ExpenseDialog } from "@/components/cashflow/ExpenseDialog";
 import { PaymentMethodBadge } from "@/components/cashflow/PaymentMethodBadge";
-import { DeliveryStatusBadge } from "@/components/cashflow/DeliveryStatusBadge";
+import { DeliveryStatusSelect } from "@/components/cashflow/DeliveryStatusSelect";
 import { MonthlyReport } from "@/components/cashflow/MonthlyReport";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,8 +30,12 @@ export default function CashFlow() {
   const [saleDialogOpen, setSaleDialogOpen] = useState(false);
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
 
-  const { sales, isLoading: salesLoading, deleteSale } = useSales(selectedMonth, selectedYear);
+  const { sales, isLoading: salesLoading, deleteSale, updateSale } = useSales(selectedMonth, selectedYear);
   const { expenses, isLoading: expensesLoading, deleteExpense } = useExpenses(selectedMonth, selectedYear);
+
+  const handleStatusChange = (saleId: string, newStatus: DeliveryStatus) => {
+    updateSale.mutate({ id: saleId, delivery_status: newStatus });
+  };
 
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - 2 + i);
 
@@ -154,7 +158,12 @@ export default function CashFlow() {
                               <PaymentMethodBadge method={sale.payment_method} />
                             </TableCell>
                             <TableCell>
-                              <DeliveryStatusBadge status={sale.delivery_status} />
+                              <DeliveryStatusSelect 
+                                saleId={sale.id}
+                                currentStatus={sale.delivery_status}
+                                onStatusChange={handleStatusChange}
+                                disabled={updateSale.isPending}
+                              />
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>
