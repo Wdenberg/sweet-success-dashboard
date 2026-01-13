@@ -134,7 +134,7 @@ export function AdminSidebar() {
         <div className="px-4 py-4 border-t border-background/10">
           <div className="flex items-center gap-3 px-2">
             <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-sm font-bold text-primary-foreground">{getUserInitials()}</span>
+             <span className="text-sm font-bold text-primary-foreground">{getUserInitials()}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-background truncate">Administrador</p>
