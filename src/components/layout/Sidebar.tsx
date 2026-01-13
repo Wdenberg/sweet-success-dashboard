@@ -20,6 +20,8 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TrialBanner } from "@/components/trial/TrialBanner";
+import { useQuery } from "@tanstack/react-query";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -54,6 +56,20 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url, full_name')
+        .eq('user_id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   useEffect(() => {
     async function checkAdminRole() {
@@ -184,9 +200,12 @@ export function Sidebar() {
         {/* User Info */}
         <div className="px-4 py-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3 px-2">
-            <div className="h-10 w-10 rounded-full bg-primary-soft flex items-center justify-center">
-              <span className="text-sm font-bold text-primary">{getUserInitials()}</span>
-            </div>
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={profile?.avatar_url || undefined} alt={getUserName()} />
+              <AvatarFallback className="bg-primary-soft text-primary text-sm font-bold">
+                {getUserInitials()}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-sidebar-foreground truncate">{getUserName()}</p>
               <SubscriptionBadge />

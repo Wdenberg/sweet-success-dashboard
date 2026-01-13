@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface MobileSidebarProps {
   variant?: "dashboard" | "admin";
@@ -41,6 +42,20 @@ export function MobileSidebar({ variant = "dashboard" }: MobileSidebarProps) {
       return !!data;
     },
     enabled: !!user?.id && variant === "dashboard",
+  });
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url, full_name')
+        .eq('user_id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
   });
 
   const menuItems = variant === "admin" ? adminMenuItems : dashboardMenuItems;
@@ -171,15 +186,16 @@ export function MobileSidebar({ variant = "dashboard" }: MobileSidebarProps) {
           {user && (
             <div className="px-4 py-4 border-t border-background/10">
               <div className="flex items-center gap-3 px-2">
-                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-sm font-bold text-primary-foreground">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={profile?.avatar_url || undefined} alt={user.email || ''} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
                     {user.user_metadata?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || 
                      user.email?.slice(0, 2).toUpperCase()}
-                  </span>
-                </div>
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-background truncate">
-                    {user.user_metadata?.full_name || "Usuário"}
+                    {profile?.full_name || user.user_metadata?.full_name || "Usuário"}
                   </p>
                   <p className="text-xs text-background/60 truncate">{user.email}</p>
                 </div>
