@@ -1,73 +1,68 @@
-# Welcome to your Lovable project
+# 🎂 Doce Gestão - Sistema 
 
-## Project info
+Uma plataforma moderna para gestão de catálogos de confeitaria, permitindo que lojistas personalizem sua vitrine, gerenciem produtos e recebam pedidos via WhatsApp.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 Funcionalidades
 
-## How can I edit this code?
+- **Painel Administrativo**: Gestão completa de produtos (CRUD).
+- **Personalização de Branding**: Alteração de cores, banner, logo e bio em tempo real.
+- **Catálogo Público Dinâmico**: Vitrine otimizada para dispositivos móveis com visualização de preços.
+- **Integração WhatsApp**: Botão flutuante para pedidos diretos com o lojista.
+- **Sistema de Trial**: Gerenciamento de 15 dias de teste gratuito para novos usuários.
 
-There are several ways of editing your application.
+## 🛠️ Tecnologias Utilizadas
 
-**Use Lovable**
+### Frontend
+- **React + TypeScript** (Vite)
+- **Tailwind CSS** (Estilização)
+- **shadcn/ui** (Componentes de interface)
+- **TanStack Query (v5)** (Gerenciamento de estado e cache)
+- **Lucide React** (Ícones)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Backend & Infraestrutura
+- **Supabase**: 
+  - **Auth**: Autenticação de usuários.
+  - **PostgreSQL**: Banco de dados relacional.
+  - **Storage**: Armazenamento de imagens do catálogo e banners.
+  - **Edge Functions & RPC**: Lógica de banco de dados segura.
 
-Changes made via Lovable will be committed automatically to this repo.
+## 💻 Como Rodar Localmente
 
-**Use your preferred IDE**
+### Pré-requisitos
+- Node.js instalado (v18 ou superior)
+- Conta no [Supabase](https://supabase.com/)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Instalação
+1. Clone o repositório:
+   ```sh
+   git clone <URL_DO_REPOSITORIO>
+   cd docegestao
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+   Instale as dependências:
 
-Follow these steps:
+Bash
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+npm install
+Configure as variáveis de ambiente: Crie um arquivo .env na raiz e adicione suas chaves do Supabase:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Snippet de código
 
-# Step 3: Install the necessary dependencies.
-npm i
+VITE_SUPABASE_URL=sua_url_aqui
+VITE_SUPABASE_ANON_KEY=sua_chave_anon_aqui
+Inicie o servidor de desenvolvimento:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Bash
+
 npm run dev
-```
+🏗️ Estrutura de Banco de Dados (RPC)
+O projeto utiliza funções RPC para garantir que o catálogo público seja acessível sem expor dados sensíveis do usuário:
 
-**Edit a file directly in GitHub**
+get_public_catalog_profile: Retorna dados de branding da loja.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+get_public_catalog_items: Retorna a lista de produtos ativos.
 
-**Use GitHub Codespaces**
+Desenvolvido por [Wdenberg Ramos]
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)

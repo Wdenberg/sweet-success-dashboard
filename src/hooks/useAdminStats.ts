@@ -9,6 +9,7 @@ export interface AdminUser {
   id: string;
   user_id: string;
   email: string;
+  phone: string;
   full_name: string;
   created_at: string;
   updated_at: string;
@@ -104,7 +105,8 @@ export function useAdminStats() {
       return {
         id: profile.id,
         user_id: profile.user_id,
-        email: `user${index + 1}@email.com`, // Placeholder since we can't access auth.users
+        email: profile.email || "Sem Email", // Placeholder since we can't access auth.users
+        phone: profile.phone || "Sem Telefone", // Placeholder since we can't access auth.users
         full_name: profile.full_name,
         created_at: profile.created_at,
         updated_at: profile.updated_at,

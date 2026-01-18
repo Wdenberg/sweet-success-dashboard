@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAdminStats, AdminUser } from "@/hooks/useAdminStats";
+
 import { toast } from "sonner";
 
 export default function AdminUsers() {
@@ -193,6 +194,7 @@ export default function AdminUsers() {
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left py-4 px-6 text-sm font-medium text-muted-foreground">Usuário</th>
+                  <th className="text-left py-4 px-6 text-sm font-medium text-muted-foreground">Telefone</th>
                   <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Status</th>
                   <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Trial Expira</th>
                   <th className="text-center py-4 px-6 text-sm font-medium text-muted-foreground">Dias Restantes</th>
@@ -219,10 +221,15 @@ export default function AdminUsers() {
                           <p className="text-sm text-muted-foreground">{user.email}</p>
                         </div>
                       </div>
+
+                    </td>
+                      <td className="py-4 px-6 text-center">
+                      {user.phone}
                     </td>
                     <td className="py-4 px-6 text-center">
                       {getStatusBadge(user.subscription_status)}
                     </td>
+                  
                     <td className="py-4 px-6 text-center">
                       {user.trial_ends_at ? (
                         <span className="text-sm text-muted-foreground">
