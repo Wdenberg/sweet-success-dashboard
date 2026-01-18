@@ -91,12 +91,12 @@ export default function ShoppingList() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
+      <div className="flex items-center justify-between mb-8 sm: flex-col sm:gap-4">
+        <div className="space-y-1">
           <h1 className="text-2xl font-bold text-foreground">Lista de Compras</h1>
-          <p className="text-muted-foreground">{items.length} itens • {checkedCount} comprados</p>
+          <p className="text-muted-foreground ">{items.length} itens • {checkedCount} comprados</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 sm: pt-3">
           {checkedCount > 0 && (
             <Button 
               variant="outline" 

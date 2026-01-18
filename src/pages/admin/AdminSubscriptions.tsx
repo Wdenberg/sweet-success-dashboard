@@ -156,7 +156,7 @@ export default function AdminSubscriptions() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-primary/30 bg-primary-soft/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -212,7 +212,7 @@ export default function AdminSubscriptions() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-4 mb-6 sm: flex-col sm:gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input

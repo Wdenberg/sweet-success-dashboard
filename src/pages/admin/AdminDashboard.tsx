@@ -89,7 +89,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* KPIs Grid */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi, index) => (
           <Card 
             key={kpi.title} 
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {/* Status Breakdown */}
         <Card className="col-span-2">
           <CardHeader>

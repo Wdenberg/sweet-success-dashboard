@@ -98,7 +98,7 @@ const Catalog = () => {
               {items?.length || 0} produto{items?.length !== 1 ? "s" : ""} cadastrado{items?.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:flex-row flex-col">
             <Button variant="outline" onClick={copyPublicLink}>
               {linkCopied ? (
                 <Check className="h-4 w-4 mr-2" />
