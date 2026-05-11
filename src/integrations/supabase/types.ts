@@ -196,7 +196,6 @@ export type Database = {
           catalog_whatsapp: string | null
           created_at: string
           full_name: string
-          email: string | null
           id: string
           phone: string | null
           subscription_status:
